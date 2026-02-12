@@ -1,0 +1,4 @@
+<%# Renders supervision status badge. Local: project %>
+<% status = project.supervision_status %>
+<% label = { on_track: "On track", at_risk: "At risk", behind: "Behind" }.fetch(status, "On track") %>
+<span class="risk-badge risk-badge-<%= status %>" title="Supervision status"><%= label %></span>

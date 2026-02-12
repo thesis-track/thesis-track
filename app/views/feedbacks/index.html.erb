@@ -1,0 +1,37 @@
+<div class="page-header">
+  <h1>Feedback</h1>
+  <p class="page-subtitle"><%= link_to @project.title, project_path(@project) %></p>
+</div>
+
+<div class="flex gap-2 mt-2" style="flex-wrap: wrap;">
+  <%= link_to "Add feedback", new_project_feedback_path(@project), class: "btn btn-primary" %>
+  <%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %>
+</div>
+
+<div class="flex gap-1 mt-1" style="flex-wrap: wrap;">
+  <% if params[:status] == "pending" %>
+    <%= link_to "Show all", project_feedbacks_path(@project), class: "btn btn-secondary btn-sm" %>
+  <% else %>
+    <%= link_to "Pending only", project_feedbacks_path(@project, status: "pending"), class: "btn btn-secondary btn-sm" %>
+  <% end %>
+</div>
+
+<ul class="list-unstyled mt-2">
+  <% @feedbacks.each do |f| %>
+    <li class="card" style="margin-bottom: 0.75rem;">
+      <strong><%= link_to f.section_name, project_feedback_path(@project, f) %></strong>
+      <span class="text-muted"> · <%= f.implementation_status %></span>
+      <% if f.document_version %>
+        <span class="text-muted"> · Document <%= f.document_version.version_label %></span>
+      <% end %>
+      <p class="text-muted mb-0 mt-1" style="font-size: 0.875rem;"><%= truncate(f.comments, length: 120) %></p>
+      <span class="text-muted" style="font-size: 0.8125rem;"><%= l(f.created_at, format: :short) %></span>
+    </li>
+  <% end %>
+</ul>
+
+<% if @feedbacks.empty? %>
+  <div class="empty-state mt-2">
+    <p class="mb-0">No feedback yet.</p>
+  </div>
+<% end %>

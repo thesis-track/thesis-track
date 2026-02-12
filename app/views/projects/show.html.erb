@@ -1,0 +1,42 @@
+<div class="page-header">
+  <h1><%= @project.title %></h1>
+  <p class="page-subtitle">Student: <%= @project.student.name %></p>
+</div>
+
+<% if @project.description.present? %>
+  <div class="card">
+    <h2 class="card-title">Description</h2>
+    <p class="mb-0"><%= simple_format(@project.description) %></p>
+  </div>
+<% end %>
+
+<div class="card card-stat">
+  <h2 class="card-title">Progress</h2>
+  <p class="card-stat-value"><%= @project.progress_percentage %>%</p>
+  <%= render "shared/progress_bar", project: @project, label: false %>
+  <p class="card-stat-meta mt-1"><%= @project.tasks.completed.count %> of <%= @project.tasks.count %> tasks completed</p>
+</div>
+
+<% if current_user.supervisor? %>
+  <div class="card">
+    <h2 class="card-title">Supervision health</h2>
+    <%= render "shared/supervision_health", project: @project %>
+  </div>
+  <div class="card">
+    <h2 class="card-title">Phase timeline</h2>
+    <%= render "shared/timeline_snapshot", project: @project %>
+  </div>
+  <div class="card">
+    <h2 class="card-title">Status</h2>
+    <%= render "shared/risk_badge", project: @project %>
+  </div>
+<% end %>
+
+<div class="project-actions">
+  <%= link_to "Tasks", project_tasks_path(@project), class: "btn btn-primary" %>
+  <%= link_to "Meetings", project_meetings_path(@project), class: "btn btn-secondary" %>
+  <%= link_to "Messages", project_messages_path(@project), class: "btn btn-secondary" %>
+  <%= link_to "Documents", project_documents_path(@project), class: "btn btn-secondary" %>
+  <%= link_to "Feedback", project_feedbacks_path(@project), class: "btn btn-secondary" %>
+  <%= link_to "Edit project", edit_project_path(@project), class: "btn btn-secondary" if current_user.project == @project %>
+</div>

@@ -1,0 +1,10 @@
+<div class="card">
+  <h1><%= @meeting.title %></h1>
+  <p class="text-muted"><%= l(@meeting.scheduled_at, format: :short) %><%= " · #{@meeting.location}" if @meeting.location.present? %></p>
+  <% if @meeting.agenda.present? %>
+    <h2 style="font-size: 1rem;">Agenda</h2>
+    <p><%= simple_format(@meeting.agenda) %></p>
+  <% end %>
+  <%= link_to "Edit", edit_project_meeting_path(@project, @meeting), class: "btn btn-primary" %>
+  <%= link_to "Back to meetings", project_meetings_path(@project), class: "btn btn-secondary" %>
+</div>

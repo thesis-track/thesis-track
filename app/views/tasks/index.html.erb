@@ -1,0 +1,54 @@
+<div class="page-header">
+  <h1>Tasks</h1>
+  <p class="page-subtitle"><%= link_to @project.title, project_path(@project) %></p>
+</div>
+
+<div class="flex gap-2 mt-2" style="align-items: center; flex-wrap: wrap;">
+  <%= link_to "New task", new_project_task_path(@project), class: "btn btn-primary" %>
+  <%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %>
+</div>
+
+<% overdue = @project.tasks.overdue %>
+<% if overdue.any? %>
+  <div class="alert alert-alert mt-2">
+    <strong><%= overdue.count %> overdue task(s):</strong>
+    <% overdue.each do |t| %>
+      <%= link_to t.title, project_task_path(@project, t) %><%= " · " unless t == overdue.last %>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="card card-stat mt-2">
+  <h2 class="card-title">Progress</h2>
+  <p class="card-stat-value"><%= @project.progress_percentage %>%</p>
+  <p class="card-stat-meta"><%= @project.tasks.completed.count %> of <%= @project.tasks.count %> tasks completed</p>
+</div>
+
+<ul class="list-unstyled mt-2">
+  <% @tasks.each do |task| %>
+    <li class="card" style="margin-bottom: 1rem;">
+      <div class="task-row">
+        <div class="task-info">
+          <%= link_to task.title, project_task_path(@project, task), class: (task.overdue? ? "overdue" : nil) %>
+          <% if task.overdue? %><span class="text-muted">(overdue)</span><% end %>
+          <span class="text-muted"> · <%= task.status %></span>
+          <% if task.deadline %><span class="text-muted"> · Due <%= l(task.deadline, format: :date) %></span><% end %>
+          <% if task.description.present? %>
+            <p class="text-muted mb-0 mt-1" style="font-size: 0.875rem;"><%= truncate(task.description, length: 120) %></p>
+          <% end %>
+        </div>
+        <div class="task-actions">
+          <%= link_to "Edit", edit_project_task_path(@project, task), class: "btn btn-secondary btn-sm" %>
+          <%= button_to "Delete", project_task_path(@project, task), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove this task?" } %>
+        </div>
+      </div>
+    </li>
+  <% end %>
+</ul>
+
+<% if @tasks.empty? %>
+  <div class="empty-state mt-2">
+    <p>No tasks yet.</p>
+    <%= link_to "Add your first task", new_project_task_path(@project), class: "btn btn-primary btn-sm" %>
+  </div>
+<% end %>

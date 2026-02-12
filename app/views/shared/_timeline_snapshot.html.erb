@@ -1,0 +1,14 @@
+<%# Mini phase timeline. Local: project %>
+<% phases = project.timeline_phases %>
+<div class="timeline-snapshot">
+  <% phases.each_with_index do |phase, i| %>
+    <% current = !phase[:done] && (i.zero? || phases[i - 1][:done]) %>
+    <div class="timeline-phase <%= 'timeline-phase-done' if phase[:done] %> <%= 'timeline-phase-current' if current %>">
+      <span class="timeline-phase-icon"><%= phase[:done] ? "✓" : (current ? "⏳" : "○") %></span>
+      <span class="timeline-phase-name"><%= phase[:name] %></span>
+    </div>
+    <% unless i == phases.size - 1 %>
+      <div class="timeline-connector"></div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,29 @@
+<div class="onboarding">
+  <div class="onboarding-welcome card">
+    <h1 class="onboarding-title">Welcome, <%= current_user.first_name %>!</h1>
+    <p class="onboarding-lead">You’re all set up on ThesisTrack. Add your Final Year Project below so your supervisor can see it, or skip for now and add it from your dashboard.</p>
+  </div>
+
+  <div class="onboarding-form card">
+    <h2 class="card-title">Get started</h2>
+    <p class="text-muted" style="margin-bottom: 1.25rem;">Give your project a title and short description. You can change these anytime.</p>
+
+    <%= form_with model: @project, url: get_started_path, method: :post, local: true do |f| %>
+      <%= render "devise/shared/error_messages", resource: @project %>
+
+      <div class="form-group">
+        <%= f.label :title, "Project title" %>
+        <%= f.text_field :title, class: "form-control", required: true, placeholder: "e.g. A Web-Based System for Final Year Project Supervision" %>
+      </div>
+      <div class="form-group">
+        <%= f.label :description, "Brief description" %>
+        <%= f.text_area :description, class: "form-control", rows: 4, placeholder: "A short summary of your thesis or FYP topic and goals." %>
+      </div>
+
+      <div class="onboarding-actions">
+        <%= f.submit "Create my project & go to dashboard", class: "btn btn-primary btn-lg btn-block" %>
+        <%= link_to "I'll do this later", dashboard_path, class: "onboarding-skip" %>
+      </div>
+    <% end %>
+  </div>
+</div>

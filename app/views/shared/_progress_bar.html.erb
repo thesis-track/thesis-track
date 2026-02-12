@@ -1,0 +1,11 @@
+<%# Renders a visual progress bar. Local: project (or percentage + optional label) %>
+<% pct = local_assigns[:project] ? project.progress_percentage : (local_assigns[:percentage] || 0) %>
+<% label = local_assigns.fetch(:label, true) %>
+<div class="progress-bar-wrap">
+  <div class="progress-bar" role="progressbar" aria-valuenow="<%= pct %>" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar-fill" style="width: <%= [pct, 100].min %>%"></div>
+  </div>
+  <% if label %>
+    <span class="progress-bar-label"><%= pct %>%</span>
+  <% end %>
+</div>

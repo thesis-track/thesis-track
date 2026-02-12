@@ -1,0 +1,11 @@
+<h1>New document</h1>
+<p class="text-muted"><%= link_to @project.title, project_path(@project) %></p>
+
+<%= form_with model: [@project, @document], local: true do |f| %>
+  <div class="form-group">
+    <%= f.label :title %>
+    <%= f.text_field :title, class: "form-control", required: true, placeholder: "e.g. Chapter 1 Draft" %>
+  </div>
+  <%= f.submit "Create document", class: "btn btn-primary" %>
+  <%= link_to "Cancel", project_documents_path(@project), class: "btn btn-secondary" %>
+<% end %>

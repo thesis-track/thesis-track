@@ -1,0 +1,23 @@
+<h1>Edit task</h1>
+<p class="text-muted"><%= link_to @task.title, project_task_path(@project, @task) %></p>
+
+<%= form_with model: [@project, @task], url: project_task_path(@project, @task), method: :patch, local: true do |f| %>
+  <div class="form-group">
+    <%= f.label :title %>
+    <%= f.text_field :title, class: "form-control", required: true %>
+  </div>
+  <div class="form-group">
+    <%= f.label :description %>
+    <%= f.text_area :description, class: "form-control", rows: 3 %>
+  </div>
+  <div class="form-group">
+    <%= f.label :deadline %>
+    <%= f.date_field :deadline, class: "form-control" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :status %>
+    <%= f.select :status, Task::STATUSES, {}, class: "form-control" %>
+  </div>
+  <%= f.submit "Update task", class: "btn btn-primary" %>
+  <%= link_to "Cancel", project_task_path(@project, @task), class: "btn btn-secondary" %>
+<% end %>

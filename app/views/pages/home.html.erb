@@ -1,0 +1,21 @@
+<div class="landing">
+  <div class="landing-hero">
+    <h1 class="landing-title">ThesisTrack</h1>
+    <p class="landing-tagline">Final Year Project Supervision Platform</p>
+    <p class="landing-desc">Manage your thesis, stay in touch with your supervisor, track tasks and feedback—all in one place.</p>
+    <div class="landing-actions">
+      <%= link_to "Log in", new_user_session_path, class: "btn btn-primary btn-lg" %>
+      <%= link_to "Sign up", new_user_registration_path, class: "btn btn-secondary btn-lg" %>
+    </div>
+  </div>
+  <div class="landing-features">
+    <div class="landing-feature card">
+      <h3>For Students</h3>
+      <p>Create your project, manage tasks and deadlines, upload documents with version history, and receive structured feedback from your supervisor.</p>
+    </div>
+    <div class="landing-feature card">
+      <h3>For Supervisors</h3>
+      <p>Overview of all your supervisees, track project progress, schedule meetings, exchange messages, and give feedback linked to document versions.</p>
+    </div>
+  </div>
+</div>

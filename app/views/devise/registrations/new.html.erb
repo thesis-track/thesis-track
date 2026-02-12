@@ -1,0 +1,104 @@
+<div class="auth-card card">
+  <h1 class="auth-title">Sign up for ThesisTrack</h1>
+  <p class="auth-subtitle text-muted">Create an account as a Student or Supervisor. Use your university email.</p>
+
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "devise-form" }) do |f| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+
+  <div class="form-group">
+    <%= f.label :first_name, "First name" %>
+    <%= f.text_field :first_name, class: "form-control", autofocus: true, required: true, placeholder: "Given name" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :last_name, "Last name" %>
+    <%= f.text_field :last_name, class: "form-control", required: true, placeholder: "Family name" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :email, "University email" %>
+    <%= f.email_field :email, class: "form-control", required: true, autocomplete: "email", placeholder: "you@university.edu" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :role, "I am a" %>
+    <%= f.select :role, [["Student", "student"], ["Supervisor", "supervisor"]], { include_blank: "Select role..." }, { class: "form-control", required: true, id: "user_role" } %>
+  </div>
+
+  <div id="student-fields" class="role-fields" style="display: none;">
+    <div class="form-group">
+      <%= f.label :supervisor_email, "Supervisor email" %>
+      <%= f.email_field :supervisor_email, class: "form-control", placeholder: "supervisor@university.edu" %>
+      <small class="text-muted">Your assigned supervisor’s university email. They must already have a ThesisTrack account.</small>
+    </div>
+    <div class="form-group">
+      <%= f.label :student_id, "Student ID (optional)" %>
+      <%= f.text_field :student_id, class: "form-control", placeholder: "e.g. 12345678" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :degree_programme, "Degree programme" %>
+      <%= f.text_field :degree_programme, class: "form-control", placeholder: "e.g. BSc Computer Science" %>
+    </div>
+  </div>
+
+  <div id="supervisor-fields" class="role-fields" style="display: none;">
+    <div class="form-group">
+      <%= f.label :department, "Department" %>
+      <%= f.text_field :department, class: "form-control", placeholder: "e.g. Computer Science" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :staff_id, "Staff ID (optional)" %>
+      <%= f.text_field :staff_id, class: "form-control", placeholder: "e.g. E12345" %>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :password %>
+    <% if @minimum_password_length %>
+      <em class="text-muted">(<%= @minimum_password_length %> characters minimum)</em>
+    <% end %>
+    <%= f.password_field :password, class: "form-control", autocomplete: "new-password", required: true %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :password_confirmation, "Password confirmation" %>
+    <%= f.password_field :password_confirmation, class: "form-control", autocomplete: "new-password", required: true %>
+  </div>
+
+  <div class="auth-actions">
+    <%= f.submit "Sign up", class: "btn btn-primary btn-block" %>
+  </div>
+<% end %>
+
+  <div class="auth-links">
+    <%= link_to "Already have an account? Log in", new_user_session_path, class: "auth-link" %>
+  </div>
+</div>
+
+<script>
+  (function() {
+    var roleSelect = document.getElementById("user_role");
+    var studentFields = document.getElementById("student-fields");
+    var supervisorFields = document.getElementById("supervisor-fields");
+    function toggle() {
+      var v = roleSelect && roleSelect.value;
+      studentFields.style.display = v === "student" ? "block" : "none";
+      supervisorFields.style.display = v === "supervisor" ? "block" : "none";
+      if (v === "student") {
+        studentFields.querySelector('input[name="user[supervisor_email]"]').setAttribute("required", "required");
+        studentFields.querySelector('input[name="user[degree_programme]"]').setAttribute("required", "required");
+        supervisorFields.querySelectorAll("input").forEach(function(i) { i.removeAttribute("required"); });
+      } else if (v === "supervisor") {
+        supervisorFields.querySelector('input[name="user[department]"]').setAttribute("required", "required");
+        studentFields.querySelectorAll("input").forEach(function(i) { i.removeAttribute("required"); });
+      } else {
+        studentFields.querySelectorAll("input").forEach(function(i) { i.removeAttribute("required"); });
+        supervisorFields.querySelectorAll("input").forEach(function(i) { i.removeAttribute("required"); });
+      }
+    }
+    if (roleSelect) {
+      roleSelect.addEventListener("change", toggle);
+      toggle();
+    }
+  })();
+</script>

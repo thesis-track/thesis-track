@@ -1,9 +1,37 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# frozen_string_literal: true
+
+# Create supervisor and student for development. Run: bin/rails db:seed
+# Default password for both: password
+
+supervisor = User.find_or_initialize_by(email: "supervisor@example.com")
+supervisor.assign_attributes(
+  first_name: "Jane",
+  last_name: "Supervisor",
+  role: "supervisor",
+  department: "Computer Science",
+  staff_id: "E10001",
+  password: "password",
+  password_confirmation: "password"
+)
+supervisor.save!
+
+student = User.find_or_initialize_by(email: "student@example.com")
+student.assign_attributes(
+  first_name: "Alex",
+  last_name: "Student",
+  role: "student",
+  supervisor_id: supervisor.id,
+  student_id: "12345678",
+  degree_programme: "BSc Computer Science",
+  password: "password",
+  password_confirmation: "password"
+)
+student.save!
+
+project = student.project || student.create_project!(
+  title: "Final Year Project Example",
+  description: "A sample thesis project for demonstration."
+)
+
+puts "Seeded: supervisor@example.com / password, student@example.com / password"
+puts "Project: #{project.title}"

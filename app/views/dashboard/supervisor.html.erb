@@ -1,0 +1,160 @@
+<div class="page-header">
+  <h1>Supervisor dashboard</h1>
+  <p class="page-subtitle">Overview of your supervisees and their projects.</p>
+</div>
+
+<%# Quick stats at top %>
+<div class="dashboard-stats">
+  <div class="dashboard-stat-card">
+    <div class="dashboard-stat-card-value"><%= @total_students %></div>
+    <div class="dashboard-stat-card-label">Total students</div>
+  </div>
+  <div class="dashboard-stat-card <%= 'at-risk' if @students_at_risk.positive? %>">
+    <div class="dashboard-stat-card-value"><%= @students_at_risk %></div>
+    <div class="dashboard-stat-card-label">Students at risk</div>
+  </div>
+  <div class="dashboard-stat-card">
+    <div class="dashboard-stat-card-value"><%= @pending_feedback_count %></div>
+    <div class="dashboard-stat-card-label">Pending feedback items</div>
+  </div>
+  <div class="dashboard-stat-card">
+    <div class="dashboard-stat-card-value"><%= @upcoming_meetings_this_week %></div>
+    <div class="dashboard-stat-card-label">Meetings this week</div>
+  </div>
+</div>
+
+<%# Expandable student cards %>
+<h2>Supervisees</h2>
+<% if @students.any? %>
+  <% @students.each do |student| %>
+    <% project = student.project.present? && student.project.persisted? ? student.project : nil %>
+    <div class="student-card">
+      <details class="student-card-details">
+        <summary class="student-card-header">
+          <div>
+            <span class="student-card-title"><%= student.name %></span>
+            <span class="text-muted" style="font-size: 0.875rem;">(<%= student.email %>)</span>
+            <% if project %>
+              <%= render "shared/risk_badge", project: project %>
+            <% end %>
+          </div>
+          <div class="student-card-meta" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <% if project %>
+              <span class="text-muted" style="font-size: 0.8125rem;">Last activity: <%= project.last_activity_at ? "#{time_ago_in_words(project.last_activity_at)} ago" : "—" %></span>
+              <% if project.last_message_at %>
+                <span class="text-muted" style="font-size: 0.8125rem;">Last message: <%= time_ago_in_words(project.last_message_at) %> ago</span>
+              <% end %>
+            <% else %>
+              <span class="text-muted">No project yet</span>
+            <% end %>
+          </div>
+        </summary>
+        <div class="student-card-body">
+          <div class="student-card-body-inner">
+            <% if project %>
+              <div class="student-card-section">
+                <div class="student-card-section-title">Project</div>
+                <%= link_to project.title, project_path(project) %>
+                <%= render "shared/progress_bar", project: project %>
+              </div>
+              <div class="student-card-section">
+                <div class="student-card-section-title">Supervision health</div>
+                <%= render "shared/supervision_health", project: project %>
+              </div>
+              <div class="student-card-section">
+                <div class="student-card-section-title">Phase timeline</div>
+                <%= render "shared/timeline_snapshot", project: project %>
+              </div>
+              <div class="student-card-section">
+                <div class="student-card-section-title">Task summary</div>
+                <p class="text-muted mb-0" style="font-size: 0.875rem;"><%= project.tasks.completed.count %> of <%= project.tasks.count %> tasks completed</p>
+                <% if project.next_deadline %>
+                  <p class="text-muted mb-0" style="font-size: 0.875rem;">Next deadline: <%= l(project.next_deadline, format: :date) %></p>
+                <% end %>
+              </div>
+              <% recent_feedback = project.feedbacks.recent.limit(3) %>
+              <% if recent_feedback.any? %>
+                <div class="student-card-section">
+                  <div class="student-card-section-title">Recent feedback</div>
+                  <ul class="list-unstyled" style="font-size: 0.875rem;">
+                    <% recent_feedback.each do |f| %>
+                      <li class="list-item" style="padding: 0.25rem 0;">
+                        <%= link_to f.section_name, project_feedback_path(project, f) %> · <%= f.implementation_status %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
+              <div class="student-card-actions">
+                <%= link_to "Schedule meeting", new_project_meeting_path(project), class: "btn btn-primary btn-sm" %>
+                <%= link_to "View project", project_path(project), class: "btn btn-secondary btn-sm" %>
+                <%= link_to "Tasks", project_tasks_path(project), class: "btn btn-secondary btn-sm" %>
+                <%= link_to "Messages", project_messages_path(project), class: "btn btn-secondary btn-sm" %>
+                <%= link_to "Feedback", project_feedbacks_path(project), class: "btn btn-secondary btn-sm" %>
+              </div>
+            <% else %>
+              <p class="text-muted mb-0">This student has not created a project yet.</p>
+              <%= link_to "View all projects", projects_path, class: "btn btn-secondary btn-sm mt-1" %>
+            <% end %>
+          </div>
+        </div>
+      </details>
+    </div>
+  <% end %>
+  <%= link_to "View all projects", projects_path, class: "btn btn-primary mt-2" %>
+<% else %>
+  <div class="empty-state">
+    <p class="mb-0">No students assigned yet.</p>
+  </div>
+<% end %>
+
+<%# Overdue tasks section %>
+<% if @overdue_tasks.any? %>
+  <h2>⚠ Overdue tasks</h2>
+  <div class="card">
+    <ul class="list-unstyled">
+      <% @overdue_tasks.each do |task| %>
+        <li class="list-item">
+          <%= link_to task.title, project_task_path(task.project, task) %> — <%= task.project.student.name %>
+          <span class="text-muted"> · Due <%= l(task.deadline, format: :date) %></span>
+          <%= link_to "View", project_path(task.project), class: "btn btn-secondary btn-sm" %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%# Pending feedback %>
+<h2>Pending feedback</h2>
+<div class="card">
+  <% pending = Feedback.joins(:project).where(projects: { student_id: current_user.student_ids }).pending_implementation.recent.limit(10) %>
+  <% if pending.any? %>
+    <ul class="list-unstyled">
+      <% pending.each do |f| %>
+        <li class="list-item">
+          <%= link_to f.section_name, project_feedback_path(f.project, f) %> — <%= f.project.student.name %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted mb-0">No pending feedback.</p>
+  <% end %>
+</div>
+
+<%# Upcoming meetings %>
+<h2>Upcoming meetings</h2>
+<div class="card">
+  <% meetings = Meeting.joins(:project).where(projects: { student_id: current_user.student_ids }).upcoming.limit(10) %>
+  <% if meetings.any? %>
+    <ul class="list-unstyled">
+      <% meetings.each do |m| %>
+        <li class="list-item">
+          <%= link_to m.title, project_meeting_path(m.project, m) %> — <%= m.project.student.name %><br>
+          <span class="text-muted"><%= l(m.scheduled_at, format: :short) %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted mb-0">No upcoming meetings.</p>
+  <% end %>
+</div>
