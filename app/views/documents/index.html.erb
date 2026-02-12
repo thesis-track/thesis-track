@@ -1,0 +1,25 @@
+<div class="page-header">
+  <h1>Documents</h1>
+  <p class="page-subtitle"><%= link_to @project.title, project_path(@project) %></p>
+</div>
+
+<div class="flex gap-2 mt-2" style="flex-wrap: wrap;">
+  <%= link_to "New document", new_project_document_path(@project), class: "btn btn-primary" %>
+  <%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %>
+</div>
+
+<ul class="list-unstyled mt-2">
+  <% @documents.each do |doc| %>
+    <li class="card" style="margin-bottom: 0.75rem;">
+      <%= link_to doc.title, project_document_path(@project, doc) %>
+      <span class="text-muted"> · <%= doc.document_versions.count %> version(s)</span>
+    </li>
+  <% end %>
+</ul>
+
+<% if @documents.empty? %>
+  <div class="empty-state mt-2">
+    <p>No documents yet.</p>
+    <%= link_to "Add your first document", new_project_document_path(@project), class: "btn btn-primary btn-sm" %>
+  </div>
+<% end %>

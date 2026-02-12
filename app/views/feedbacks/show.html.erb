@@ -1,0 +1,11 @@
+<div class="card">
+  <h1><%= @feedback.section_name %></h1>
+  <p class="text-muted">Status: <%= @feedback.implementation_status %> · <%= l(@feedback.created_at, format: :short) %></p>
+  <% if @feedback.document_version %>
+    <p class="text-muted">Linked to document: <%= @feedback.document_version.document.title %> <%= @feedback.document_version.version_label %></p>
+  <% end %>
+  <h2 style="font-size: 1rem;">Comments</h2>
+  <p><%= simple_format(@feedback.comments) %></p>
+  <%= link_to "Edit", edit_project_feedback_path(@project, @feedback), class: "btn btn-primary" %>
+  <%= link_to "Back to feedback", project_feedbacks_path(@project), class: "btn btn-secondary" %>
+</div>

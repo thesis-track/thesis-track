@@ -1,0 +1,40 @@
+<div class="page-header">
+  <h1>Messages</h1>
+  <p class="page-subtitle">
+    <%= link_to @project.title, project_path(@project) %> — Conversation with <%= @other_party.name %>
+  </p>
+</div>
+
+<%= form_with url: project_messages_path(@project), method: :get, local: true, class: "flex gap-1", style: "margin-bottom: 1rem;" do |f| %>
+  <%= f.text_field :q, value: params[:q], class: "form-control", placeholder: "Search messages...", style: "max-width: 300px;" %>
+  <%= f.submit "Search", class: "btn btn-secondary" %>
+  <%= link_to "Clear", project_messages_path(@project), class: "btn btn-secondary" if params[:q].present? %>
+<% end %>
+
+<div class="card" style="max-height: 60vh; overflow-y: auto;">
+  <ul class="list-unstyled">
+    <% @messages.each do |msg| %>
+      <li class="list-item">
+        <strong><%= msg.sender.name %></strong>
+        <span class="text-muted"><%= l(msg.created_at, format: :short) %></span>
+        <p class="mb-0 mt-1"><%= simple_format(msg.body) %></p>
+      </li>
+    <% end %>
+  </ul>
+  <% if @messages.empty? %>
+    <p class="text-muted mb-0">No messages yet. Send one below.</p>
+  <% end %>
+</div>
+
+<div class="card mt-1">
+  <h2 class="card-title">Send message</h2>
+  <%= form_with model: [@project, @message], local: true do |f| %>
+    <div class="form-group">
+      <%= f.label :body, "Message" %>
+      <%= f.text_area :body, class: "form-control", rows: 3, required: true %>
+    </div>
+    <%= f.submit "Send", class: "btn btn-primary" %>
+  <% end %>
+</div>
+
+<p class="mt-1"><%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %></p>

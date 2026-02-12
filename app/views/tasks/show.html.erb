@@ -1,0 +1,10 @@
+<div class="card">
+  <h1><%= @task.title %></h1>
+  <p class="text-muted">Status: <%= @task.status %> <% if @task.deadline %> · Due <%= l(@task.deadline, format: :date) %><% end %></p>
+  <% if @task.overdue? %><p class="overdue">This task is overdue.</p><% end %>
+  <% if @task.description.present? %>
+    <p><%= simple_format(@task.description) %></p>
+  <% end %>
+  <%= link_to "Edit", edit_project_task_path(@project, @task), class: "btn btn-primary" %>
+  <%= link_to "Back to tasks", project_tasks_path(@project), class: "btn btn-secondary" %>
+</div>

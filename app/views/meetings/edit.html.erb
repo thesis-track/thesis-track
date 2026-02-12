@@ -1,0 +1,23 @@
+<h1>Edit meeting</h1>
+<p class="text-muted"><%= link_to @meeting.title, project_meeting_path(@project, @meeting) %></p>
+
+<%= form_with model: [@project, @meeting], url: project_meeting_path(@project, @meeting), method: :patch, local: true do |f| %>
+  <div class="form-group">
+    <%= f.label :title %>
+    <%= f.text_field :title, class: "form-control", required: true %>
+  </div>
+  <div class="form-group">
+    <%= f.label :scheduled_at %>
+    <%= f.datetime_local_field :scheduled_at, class: "form-control", required: true %>
+  </div>
+  <div class="form-group">
+    <%= f.label :location %>
+    <%= f.text_field :location, class: "form-control" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :agenda %>
+    <%= f.text_area :agenda, class: "form-control", rows: 4 %>
+  </div>
+  <%= f.submit "Update meeting", class: "btn btn-primary" %>
+  <%= link_to "Cancel", project_meeting_path(@project, @meeting), class: "btn btn-secondary" %>
+<% end %>

@@ -1,0 +1,44 @@
+<div class="page-header">
+  <h1>Meetings</h1>
+  <p class="page-subtitle"><%= link_to @project.title, project_path(@project) %></p>
+</div>
+
+<div class="flex gap-2 mt-2" style="flex-wrap: wrap;">
+  <%= link_to "Schedule meeting", new_project_meeting_path(@project), class: "btn btn-primary" %>
+  <%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %>
+</div>
+
+<h2>Upcoming</h2>
+<ul class="list-unstyled mt-1">
+  <% @meetings.each do |m| %>
+    <li class="card" style="margin-bottom: 1rem;">
+      <div class="meeting-row">
+        <div class="meeting-info">
+          <%= link_to m.title, project_meeting_path(@project, m) %>
+          <span class="text-muted"> · <%= l(m.scheduled_at, format: :short) %><%= " · #{m.location}" if m.location.present? %></span>
+        </div>
+        <div class="meeting-actions">
+          <%= link_to "Edit", edit_project_meeting_path(@project, m), class: "btn btn-secondary btn-sm" %>
+          <%= button_to "Cancel", project_meeting_path(@project, m), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Cancel this meeting?" } %>
+        </div>
+      </div>
+    </li>
+  <% end %>
+</ul>
+<% if @meetings.empty? %>
+  <div class="empty-state mt-1">
+    <p class="mb-0">No upcoming meetings.</p>
+  </div>
+<% end %>
+
+<% if @past_meetings.any? %>
+  <h2>Past meetings</h2>
+  <ul class="list-unstyled">
+    <% @past_meetings.each do |m| %>
+      <li class="list-item">
+        <%= link_to m.title, project_meeting_path(@project, m) %>
+        <span class="text-muted"> · <%= l(m.scheduled_at, format: :short) %></span>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

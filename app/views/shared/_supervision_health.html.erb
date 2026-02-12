@@ -1,0 +1,14 @@
+<%# Supervision Health Score with breakdown. Local: project %>
+<% breakdown = project.supervision_health_breakdown %>
+<% score = project.supervision_health_score %>
+<div class="supervision-health">
+  <div class="supervision-health-score">
+    <span class="supervision-health-value"><%= score %>%</span>
+    <span class="supervision-health-label">Supervision Health</span>
+  </div>
+  <ul class="supervision-health-breakdown">
+    <li>Tasks: <strong><%= breakdown[:tasks] %>%</strong></li>
+    <li>Feedback implemented: <strong><%= breakdown[:feedback] %>%</strong></li>
+    <li>Meetings regular: <strong><%= breakdown[:meetings] == 100 ? "Yes" : "No" %></strong></li>
+  </ul>
+</div>

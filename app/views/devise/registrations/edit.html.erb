@@ -1,0 +1,78 @@
+<h1>Edit account</h1>
+
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, class: "devise-form" }) do |f| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+
+  <div class="form-group">
+    <%= f.label :first_name, "First name" %>
+    <%= f.text_field :first_name, class: "form-control", autofocus: true, required: true %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :last_name, "Last name" %>
+    <%= f.text_field :last_name, class: "form-control", required: true %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :email, "University email" %>
+    <%= f.email_field :email, class: "form-control", required: true, autocomplete: "email" %>
+  </div>
+
+  <% if resource.student? %>
+    <div class="form-group">
+      <%= f.label :student_id, "Student ID (optional)" %>
+      <%= f.text_field :student_id, class: "form-control" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :degree_programme, "Degree programme" %>
+      <%= f.text_field :degree_programme, class: "form-control", required: true %>
+    </div>
+  <% end %>
+
+  <% if resource.supervisor? %>
+    <div class="form-group">
+      <%= f.label :department, "Department" %>
+      <%= f.text_field :department, class: "form-control", required: true %>
+    </div>
+    <div class="form-group">
+      <%= f.label :staff_id, "Staff ID (optional)" %>
+      <%= f.text_field :staff_id, class: "form-control" %>
+    </div>
+  <% end %>
+
+  <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+    <div class="alert alert-alert">Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+  <% end %>
+
+  <hr style="margin: 1.5rem 0;" />
+  <h2 style="font-size: 1rem;">Change password</h2>
+  <p class="text-muted">Leave blank if you don't want to change it.</p>
+
+  <div class="form-group">
+    <%= f.label :password, "New password" %>
+    <% if @minimum_password_length %>
+      <em class="text-muted">(<%= @minimum_password_length %> characters minimum)</em>
+    <% end %>
+    <%= f.password_field :password, class: "form-control", autocomplete: "new-password" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :password_confirmation, "Confirm new password" %>
+    <%= f.password_field :password_confirmation, class: "form-control", autocomplete: "new-password" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :current_password, "Current password" %>
+    <em class="text-muted">(required to confirm changes)</em>
+    <%= f.password_field :current_password, class: "form-control", autocomplete: "current-password" %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit "Update", class: "btn btn-primary" %>
+    <%= link_to "Back", :back, class: "btn btn-secondary" %>
+  </div>
+<% end %>
+
+<h2 style="font-size: 1rem; margin-top: 2rem;">Cancel my account</h2>
+<p class="text-muted">Once you cancel, your account and data cannot be recovered.</p>
+<%= button_to "Cancel my account", registration_path(resource_name), data: { turbo_confirm: "Are you sure? This cannot be undone." }, method: :delete, class: "btn btn-danger" %>

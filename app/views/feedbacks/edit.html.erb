@@ -1,0 +1,26 @@
+<h1>Edit feedback</h1>
+<p class="text-muted"><%= link_to @feedback.section_name, project_feedback_path(@project, @feedback) %></p>
+
+<%= form_with model: [@project, @feedback], url: project_feedback_path(@project, @feedback), method: :patch, local: true do |f| %>
+  <div class="form-group">
+    <%= f.label :section_name %>
+    <%= f.text_field :section_name, class: "form-control", required: true %>
+  </div>
+  <div class="form-group">
+    <%= f.label :comments %>
+    <%= f.text_area :comments, class: "form-control", rows: 5, required: true %>
+  </div>
+  <div class="form-group">
+    <%= f.label :implementation_status %>
+    <%= f.select :implementation_status, Feedback::IMPLEMENTATION_STATUSES, {}, class: "form-control" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :document_version_id, "Link to document version (optional)" %>
+    <%= f.select :document_version_id,
+          options_for_select(@document_versions.map { |v| ["#{v.document.title} #{v.version_label}", v.id] }, @feedback.document_version_id),
+          { include_blank: "— None —" },
+          class: "form-control" %>
+  </div>
+  <%= f.submit "Update feedback", class: "btn btn-primary" %>
+  <%= link_to "Cancel", project_feedback_path(@project, @feedback), class: "btn btn-secondary" %>
+<% end %>

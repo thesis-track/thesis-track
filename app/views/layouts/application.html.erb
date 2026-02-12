@@ -17,13 +17,25 @@
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="<%= body_page_class %>">
+    <%= render user_signed_in? ? "layouts/nav" : "layouts/nav_public" %>
+    <main class="container main-content">
+      <% if flash[:notice] %>
+        <div class="alert alert-notice"><%= flash[:notice] %></div>
+      <% end %>
+      <% if flash[:alert] %>
+        <div class="alert <%= 'alert-info' if auth_page? %> <%= 'alert-alert' unless auth_page? %>"><%= flash[:alert] %></div>
+      <% end %>
+      <%= yield %>
+    </main>
   </body>
 </html>

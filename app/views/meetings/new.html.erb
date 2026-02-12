@@ -1,0 +1,23 @@
+<h1>Schedule meeting</h1>
+<p class="text-muted"><%= link_to @project.title, project_path(@project) %></p>
+
+<%= form_with model: [@project, @meeting], local: true do |f| %>
+  <div class="form-group">
+    <%= f.label :title %>
+    <%= f.text_field :title, class: "form-control", required: true %>
+  </div>
+  <div class="form-group">
+    <%= f.label :scheduled_at %>
+    <%= f.datetime_local_field :scheduled_at, class: "form-control", required: true %>
+  </div>
+  <div class="form-group">
+    <%= f.label :location %>
+    <%= f.text_field :location, class: "form-control", placeholder: "Room or video link" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :agenda %>
+    <%= f.text_area :agenda, class: "form-control", rows: 4 %>
+  </div>
+  <%= f.submit "Schedule meeting", class: "btn btn-primary" %>
+  <%= link_to "Cancel", project_meetings_path(@project), class: "btn btn-secondary" %>
+<% end %>
