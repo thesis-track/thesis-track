@@ -2,7 +2,7 @@
   <div class="landing-hero">
     <h1 class="landing-title">ThesisTrack</h1>
     <p class="landing-tagline">Final Year Project Supervision Platform</p>
-    <p class="landing-desc">Manage your thesis, stay in touch with your supervisor, track tasks and feedback—all in one place.</p>
+    <p class="landing-desc">Manage your final year project, stay in touch with your supervisor, track tasks and feedback—all in one place.</p>
     <div class="landing-actions">
       <%= link_to "Log in", new_user_session_path, class: "btn btn-primary btn-lg" %>
       <%= link_to "Sign up", new_user_registration_path, class: "btn btn-secondary btn-lg" %>
@@ -18,4 +18,31 @@
       <p>Overview of all your supervisees, track project progress, schedule meetings, exchange messages, and give feedback linked to document versions.</p>
     </div>
   </div>
+
+  <section class="landing-how-to-use" id="how-to-use" aria-labelledby="how-to-use-title">
+    <h2 class="landing-how-to-use-title" id="how-to-use-title">How to use</h2>
+    <p class="landing-how-to-use-lead">Get started with ThesisTrack in a few steps.</p>
+    <div class="landing-how-to-use-grid">
+      <div class="landing-how-to-use-block card">
+        <h3>Students</h3>
+        <ol class="landing-how-to-use-steps">
+          <li>Sign up and add your supervisor’s email when prompted.</li>
+          <li>Create your project with a title and description from your dashboard.</li>
+          <li>Use the project tabs to manage tasks, meetings, messages, and documents.</li>
+          <li>Upload documents and request feedback; your supervisor can comment on specific sections.</li>
+          <li>Mark phases complete as you progress; keep an eye on deadlines and messages.</li>
+        </ol>
+      </div>
+      <div class="landing-how-to-use-block card">
+        <h3>Supervisors</h3>
+        <ol class="landing-how-to-use-steps">
+          <li>Sign up as a supervisor; students can then select you when they register.</li>
+          <li>Use the dashboard to see all your supervisees and risk flags.</li>
+          <li>Open each project to manage tasks, schedule meetings, and send messages.</li>
+          <li>Give feedback on documents and acknowledge messages to keep communication clear.</li>
+          <li>Use the Risk dashboard and activity flags to prioritise follow-ups.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
 </div>

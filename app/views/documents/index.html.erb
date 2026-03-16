@@ -1,11 +1,15 @@
 <div class="page-header">
+  <p class="page-back-link mb-1">
+    <%= link_to project_path(@project), class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> Back to project
+    <% end %>
+  </p>
   <h1>Documents</h1>
   <p class="page-subtitle"><%= link_to @project.title, project_path(@project) %></p>
 </div>
 
 <div class="flex gap-2 mt-2" style="flex-wrap: wrap;">
   <%= link_to "New document", new_project_document_path(@project), class: "btn btn-primary" %>
-  <%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %>
 </div>
 
 <ul class="list-unstyled mt-2">

@@ -20,6 +20,12 @@ class User < ApplicationRecord
   has_many :sent_messages, class_name: "Message", foreign_key: :sender_id, dependent: :destroy
   has_many :received_messages, class_name: "Message", foreign_key: :receiver_id, dependent: :destroy
 
+  # Notifications
+  has_many :notifications, dependent: :destroy
+
+  # Profile picture
+  has_one_attached :avatar
+
   validates :first_name, :last_name, presence: true
   validates :email, presence: true, uniqueness: true
   validates :degree_programme, presence: true, if: :student?
@@ -33,6 +39,33 @@ class User < ApplicationRecord
 
   def name
     "#{first_name} #{last_name}".strip
+  end
+
+  def initials
+    parts = [first_name, last_name].compact.map { |s| s.strip[0] }.reject(&:blank?)
+    parts.any? ? parts.join.upcase : email[0].to_s.upcase
+  end
+
+  # Unread count for nav: at least as many as unread messages (covers messages that never got a notification)
+  def unread_notification_count
+    n = notifications.unread.count
+    m = received_messages.where(read_at: nil).count
+    [n, m].max
+  end
+
+  # Create missing NewMessage notifications for unread received messages (e.g. from before the feature existed)
+  def ensure_notifications_for_unread_messages!
+    received_messages.where(read_at: nil).find_each do |msg|
+      next if notifications.where(type: "Notification::NewMessage", subject_type: "Message", subject_id: msg.id).exists?
+
+      Notification::NewMessage.create!(
+        user: self,
+        subject: msg,
+        title: "New message from #{msg.sender.name}",
+        body: msg.body.to_s.gsub(/\s+/, " ").strip.truncate(120),
+        metadata: { project_id: msg.project_id, message_id: msg.id }
+      )
+    end
   end
 
   def supervised_project_ids

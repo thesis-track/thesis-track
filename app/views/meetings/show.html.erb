@@ -1,10 +1,15 @@
-<div class="card">
-  <h1><%= @meeting.title %></h1>
-  <p class="text-muted"><%= l(@meeting.scheduled_at, format: :short) %><%= " · #{@meeting.location}" if @meeting.location.present? %></p>
+<div class="card meeting-show-card">
+  <h1 class="meeting-show-card__title"><%= @meeting.title %></h1>
+  <p class="meeting-show-card__meta text-muted"><%= l(@meeting.scheduled_at, format: :short) %><%= " · #{@meeting.location}" if @meeting.location.present? %></p>
   <% if @meeting.agenda.present? %>
-    <h2 style="font-size: 1rem;">Agenda</h2>
-    <p><%= simple_format(@meeting.agenda) %></p>
+    <div class="meeting-show-card__agenda">
+      <h2 class="meeting-show-card__agenda-title">Agenda</h2>
+      <div class="meeting-show-card__agenda-body"><%= simple_format(@meeting.agenda) %></div>
+    </div>
   <% end %>
-  <%= link_to "Edit", edit_project_meeting_path(@project, @meeting), class: "btn btn-primary" %>
-  <%= link_to "Back to meetings", project_meetings_path(@project), class: "btn btn-secondary" %>
+  <div class="meeting-show-card__actions">
+    <%= link_to "Edit", edit_project_meeting_path(@project, @meeting), class: "btn btn-primary" %>
+    <%= button_to "Cancel meeting", project_meeting_path(@project, @meeting), method: :delete, class: "btn btn-danger", data: { turbo_confirm: "Cancel this meeting?" } %>
+    <%= link_to "Back to meetings", project_meetings_path(@project), class: "btn btn-secondary" %>
+  </div>
 </div>

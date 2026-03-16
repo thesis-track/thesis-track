@@ -14,6 +14,8 @@ class MeetingsController < ApplicationController
 
   def new
     @meeting = @project.meetings.build
+    supervisor = @project.student.supervisor
+    @meeting.location = supervisor.group_meeting_url if supervisor&.group_meeting_url.present?
   end
 
   def create

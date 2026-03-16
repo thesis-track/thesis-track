@@ -1,24 +1,34 @@
-<h1><%= @document.title %></h1>
-<p class="text-muted"><%= link_to @project.title, project_path(@project) %></p>
+<div class="document-show-header">
+  <h1 class="document-show-title"><%= @document.title %></h1>
+  <p class="document-show-project"><%= link_to @project.title, project_path(@project) %></p>
+</div>
 
-<h2 style="font-size: 1rem;">Version history</h2>
-<ul class="list-unstyled">
-  <% @document_versions.each do |v| %>
-    <li class="list-item card">
-      <strong><%= v.version_label %></strong>
-      <span class="text-muted"> · <%= l(v.created_at, format: :short) %></span>
-      <% if v.file.attached? %>
-        <%= link_to "Download", project_document_document_version_path(@project, @document, v), class: "btn btn-secondary btn-sm", target: "_blank" %>
+<section class="document-version-history">
+  <h2 class="document-section-title">Version history</h2>
+  <p class="document-section-desc">Version number and upload timestamp for each file.</p>
+  <% if @document_versions.any? %>
+    <ul class="document-version-list">
+      <% @document_versions.each do |v| %>
+        <li class="document-version-item">
+          <div class="document-version-info">
+            <span class="document-version-badge"><%= v.version_label %></span>
+            <span class="document-version-meta">Uploaded <%= l(v.created_at, format: :short) %></span>
+          </div>
+          <div class="document-version-actions">
+            <% if v.file.attached? %>
+              <%= link_to "Download", project_document_document_version_path(@project, @document, v), class: "btn btn-secondary btn-sm document-version-btn", target: "_blank", rel: "noopener" %>
+            <% end %>
+            <%= button_to "Remove", project_document_document_version_path(@project, @document, v), method: :delete, class: "btn btn-danger btn-sm document-version-btn", data: { turbo_confirm: "Remove this version?" } %>
+          </div>
+        </li>
       <% end %>
-      <%= button_to "Remove", project_document_document_version_path(@project, @document, v), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove this version?" } %>
-    </li>
+    </ul>
+  <% else %>
+    <p class="document-version-empty">No versions yet. Upload a file below.</p>
   <% end %>
-</ul>
-<% if @document_versions.empty? %>
-  <p class="text-muted">No versions yet. Upload a file below.</p>
-<% end %>
+</section>
 
-<div class="card mt-1">
+<div class="card document-upload-card">
   <h2 class="card-title">Upload new version</h2>
   <%= form_with url: project_document_document_versions_path(@project, @document), method: :post, local: true, multipart: true do |f| %>
     <div class="form-group">
@@ -29,4 +39,4 @@
   <% end %>
 </div>
 
-<p class="mt-1"><%= link_to "Back to documents", project_documents_path(@project), class: "btn btn-secondary" %></p>
+<p class="document-back-link"><%= link_to "← Back to documents", project_documents_path(@project), class: "link-subtle" %></p>

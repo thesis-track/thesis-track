@@ -9,19 +9,83 @@
     <div class="dashboard-stat-card-value"><%= @total_students %></div>
     <div class="dashboard-stat-card-label">Total students</div>
   </div>
-  <div class="dashboard-stat-card <%= 'at-risk' if @students_at_risk.positive? %>">
-    <div class="dashboard-stat-card-value"><%= @students_at_risk %></div>
-    <div class="dashboard-stat-card-label">Students at risk</div>
-  </div>
   <div class="dashboard-stat-card">
     <div class="dashboard-stat-card-value"><%= @pending_feedback_count %></div>
-    <div class="dashboard-stat-card-label">Pending feedback items</div>
+    <div class="dashboard-stat-card-label">Pending feedback</div>
   </div>
   <div class="dashboard-stat-card">
     <div class="dashboard-stat-card-value"><%= @upcoming_meetings_this_week %></div>
     <div class="dashboard-stat-card-label">Meetings this week</div>
   </div>
 </div>
+
+<%# Group meeting link — add/edit here, no settings %>
+<div class="card card--soft mb-4">
+  <h2 class="card-title">Meeting link for your group</h2>
+  <p class="text-muted mb-2" style="font-size: 0.9375rem;">Add your meeting link (e.g. Teams) and it will appear for all your supervisees on their dashboard. It is also used as the default when you schedule meetings.</p>
+  <%= form_with url: dashboard_meeting_link_path, method: :patch, local: true do |f| %>
+    <div class="form-group mb-2">
+      <%= f.label :group_meeting_url, "Meeting link", class: "form-label" %>
+      <%= f.url_field :group_meeting_url, name: "user[group_meeting_url]", value: current_user.group_meeting_url, class: "form-control", placeholder: "https://teams.microsoft.com/..." %>
+    </div>
+    <%= f.submit current_user.group_meeting_url.present? ? "Update link" : "Add link", class: "btn btn-primary btn-sm" %>
+  <% end %>
+</div>
+
+<%# Submissions pending approval %>
+<% if @submissions_pending_approval&.any? %>
+  <h2>Submissions pending approval</h2>
+  <div class="card card--soft mb-4">
+    <p class="text-muted mb-2" style="font-size: 0.9375rem;">Task submissions waiting for your approval. Approve from here or open the task to add feedback first.</p>
+    <ul class="list-unstyled mb-0 submissions-pending-list">
+      <% @submissions_pending_approval.each do |submission| %>
+        <% task = submission.task %>
+        <% project = task.project %>
+        <li class="submissions-pending-item">
+          <div class="task-row">
+            <div class="task-info">
+              <strong><%= project.student.name %></strong>
+              <span class="text-muted"> · </span>
+              <%= link_to task.title, project_task_path(project, task), class: "link-subtle" %>
+              <span class="text-muted" style="font-size: 0.8125rem;"> · Submitted <%= l(submission.submitted_at || submission.created_at, format: :short) %></span>
+            </div>
+            <div class="task-actions">
+              <%= link_to "View", project_task_path(project, task), class: "btn btn-secondary btn-sm" %>
+              <%= button_to "Approve", approve_project_task_task_submission_path(project, task), method: :post, class: "btn btn-primary btn-sm" %>
+            </div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%# Supervisor risk dashboard %>
+<% if @risk_table&.any? %>
+  <h2>Risk dashboard</h2>
+  <div class="risk-table-wrap card card--soft">
+    <table class="risk-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Current phase</th>
+          <th>Last activity</th>
+          <th>Next deadline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @risk_table.each do |row| %>
+          <tr class="risk-table-row">
+            <td><%= link_to row[:student].name, project_path(row[:project]) %></td>
+            <td><%= row[:current_phase] %></td>
+            <td><%= row[:last_activity_at] ? l(row[:last_activity_at].to_time, format: :short) : "—" %></td>
+            <td><%= row[:next_deadline] ? l(row[:next_deadline], format: :date) : "—" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
 
 <%# Expandable student cards %>
 <h2>Supervisees</h2>
@@ -35,7 +99,10 @@
             <span class="student-card-title"><%= student.name %></span>
             <span class="text-muted" style="font-size: 0.875rem;">(<%= student.email %>)</span>
             <% if project %>
-              <%= render "shared/risk_badge", project: project %>
+              <% unread = project.unread_count_for(current_user) %>
+              <% if unread.positive? %>
+                <span class="badge badge-warning"><%= unread %> unread</span>
+              <% end %>
             <% end %>
           </div>
           <div class="student-card-meta" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
@@ -56,14 +123,9 @@
                 <div class="student-card-section-title">Project</div>
                 <%= link_to project.title, project_path(project) %>
                 <%= render "shared/progress_bar", project: project %>
-              </div>
-              <div class="student-card-section">
-                <div class="student-card-section-title">Supervision health</div>
-                <%= render "shared/supervision_health", project: project %>
-              </div>
-              <div class="student-card-section">
-                <div class="student-card-section-title">Phase timeline</div>
-                <%= render "shared/timeline_snapshot", project: project %>
+                <div class="student-card-section-title mt-2">Tasks</div>
+                <%= render "shared/tasks_snapshot", project: project %>
+                <%= link_to "View all tasks", project_tasks_path(project), class: "link-subtle", style: "font-size: 0.875rem;" %>
               </div>
               <div class="student-card-section">
                 <div class="student-card-section-title">Task summary</div>
@@ -78,8 +140,9 @@
                   <div class="student-card-section-title">Recent feedback</div>
                   <ul class="list-unstyled" style="font-size: 0.875rem;">
                     <% recent_feedback.each do |f| %>
-                      <li class="list-item" style="padding: 0.25rem 0;">
+                      <li class="list-item <%= 'list-item--needs-clarification' if f.needs_clarification? %>" style="padding: 0.25rem 0;">
                         <%= link_to f.section_name, project_feedback_path(project, f) %> · <%= f.implementation_status %>
+                        <% if f.needs_clarification? %><span class="badge bg-warning text-dark ms-1">Needs clarification</span><% end %>
                       </li>
                     <% end %>
                   </ul>
@@ -124,6 +187,22 @@
   </div>
 <% end %>
 
+<%# Feedback needing clarification (highlighted on supervisor dashboard) %>
+<% needs_clarification = Feedback.needs_clarification.joins(:project).where(projects: { student_id: current_user.student_ids }).includes(:project) %>
+<% if needs_clarification.any? %>
+  <h2>Feedback needing clarification</h2>
+  <div class="card card--soft mb-4">
+    <p class="text-muted mb-2" style="font-size: 0.9375rem;">Students marked these as needing clarification. Health score is slightly reduced until resolved.</p>
+    <ul class="list-unstyled mb-0">
+      <% needs_clarification.each do |f| %>
+        <li class="list-item py-1">
+          <%= link_to f.section_name, project_feedback_path(f.project, f) %> — <%= f.project.student.name %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
 <%# Pending feedback %>
 <h2>Pending feedback</h2>
 <div class="card">
@@ -148,9 +227,12 @@
   <% if meetings.any? %>
     <ul class="list-unstyled">
       <% meetings.each do |m| %>
-        <li class="list-item">
-          <%= link_to m.title, project_meeting_path(m.project, m) %> — <%= m.project.student.name %><br>
-          <span class="text-muted"><%= l(m.scheduled_at, format: :short) %></span>
+        <li class="list-item" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <%= link_to m.title, project_meeting_path(m.project, m) %> — <%= m.project.student.name %><br>
+            <span class="text-muted"><%= l(m.scheduled_at, format: :short) %></span>
+          </div>
+          <%= button_to "Cancel", project_meeting_path(m.project, m), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Cancel this meeting?" } %>
         </li>
       <% end %>
     </ul>
