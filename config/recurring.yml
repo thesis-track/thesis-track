@@ -13,3 +13,23 @@ production:
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: every hour at minute 12
+
+  stale_conversation_check:
+    class: StaleConversationCheckJob
+    queue: default
+    schedule: every day at 8:00am
+
+  deadline_reminder:
+    class: DeadlineReminderJob
+    queue: default
+    schedule: every day at 8:00am
+
+  no_reply_reminder:
+    class: NoReplyReminderJob
+    queue: default
+    schedule: every day at 8:00am
+
+  overdue_task_reminder:
+    class: OverdueTaskReminderJob
+    queue: default
+    schedule: every day at 8:00am

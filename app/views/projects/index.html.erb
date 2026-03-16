@@ -1,29 +1,45 @@
 <div class="page-header">
+  <p class="page-back-link mb-1">
+    <%= link_to dashboard_path, class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> Back to dashboard
+    <% end %>
+  </p>
   <h1>Students & projects</h1>
   <p class="page-subtitle">Manage your supervisees and their final year projects.</p>
 </div>
 
+<div class="projects-index">
 <% @projects.each do |project| %>
-  <div class="card">
-    <div class="flex gap-2" style="align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
-      <div>
-        <h2 class="card-title" style="margin-bottom: 0.25rem;"><%= link_to project.title, project_path(project) %></h2>
-        <p class="text-muted" style="font-size: 0.875rem;">Student: <%= project.student.name %> (<%= project.student.email %>)</p>
-        <%= render "shared/risk_badge", project: project %>
-        <p class="text-muted mt-1" style="font-size: 0.8125rem;">Last activity: <%= project.last_activity_at ? "#{time_ago_in_words(project.last_activity_at)} ago" : "—" %></p>
+  <article class="card project-card">
+    <header class="project-card-header">
+      <h2 class="project-card-title">
+        <%= link_to project.title, project_path(project), class: "project-card-title-link" %>
+      </h2>
+    </header>
+    <div class="project-card-meta">
+      <span class="project-card-student"><%= project.student.name %></span>
+      <span class="project-card-sep" aria-hidden="true">·</span>
+      <span class="project-card-email text-muted"><%= project.student.email %></span>
+      <span class="project-card-sep project-card-sep--block" aria-hidden="true">·</span>
+      <span class="project-card-activity text-muted">Last activity <%= project.last_activity_at ? "#{time_ago_in_words(project.last_activity_at)} ago" : "—" %></span>
+    </div>
+    <div class="project-card-progress">
+      <div class="project-card-progress-bar">
+        <%= render "shared/progress_bar", project: project, label: false %>
       </div>
+      <p class="project-card-progress-text"><%= project.tasks.completed.count %> of <%= project.tasks.count %> tasks · <strong><%= project.progress_percentage %>%</strong></p>
     </div>
-    <%= render "shared/progress_bar", project: project %>
-    <p class="mt-1" style="font-size: 0.875rem;">Progress: <strong><%= project.progress_percentage %>%</strong> · <%= project.tasks.completed.count %> / <%= project.tasks.count %> tasks</p>
-    <div class="flex gap-1 mt-1">
-      <%= link_to "View", project_path(project), class: "btn btn-primary btn-sm" %>
-      <%= link_to "Tasks", project_tasks_path(project), class: "btn btn-secondary btn-sm" %>
-      <%= link_to "Meetings", project_meetings_path(project), class: "btn btn-secondary btn-sm" %>
-      <%= link_to "Messages", project_messages_path(project), class: "btn btn-secondary btn-sm" %>
-      <%= link_to "Documents", project_documents_path(project), class: "btn btn-secondary btn-sm" %>
-      <%= link_to "Feedback", project_feedbacks_path(project), class: "btn btn-secondary btn-sm" %>
-    </div>
-  </div>
+    <footer class="project-card-actions">
+      <%= link_to "View project", project_path(project), class: "btn btn-primary btn-sm project-card-action-primary" %>
+      <div class="project-card-action-links">
+        <%= link_to "Tasks", project_tasks_path(project), class: "btn btn-secondary btn-sm" %>
+        <%= link_to "Meetings", project_meetings_path(project), class: "btn btn-secondary btn-sm" %>
+        <%= link_to "Messages", project_messages_path(project), class: "btn btn-secondary btn-sm" %>
+        <%= link_to "Documents", project_documents_path(project), class: "btn btn-secondary btn-sm" %>
+        <%= link_to "Feedback", project_feedbacks_path(project), class: "btn btn-secondary btn-sm" %>
+      </div>
+    </footer>
+  </article>
 <% end %>
 
 <% if @projects.empty? %>
@@ -31,3 +47,4 @@
     <p>No projects yet. Students you supervise will appear here once they create a project.</p>
   </div>
 <% end %>
+</div>

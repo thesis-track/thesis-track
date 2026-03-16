@@ -1,37 +1,77 @@
-<div class="page-header">
-  <h1>Feedback</h1>
-  <p class="page-subtitle"><%= link_to @project.title, project_path(@project) %></p>
+<div class="page-header page-header--section">
+  <p class="page-back-link mb-1">
+    <%= link_to project_path(@project), class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> Back to project
+    <% end %>
+  </p>
+  <h1 class="page-title--project"><%= link_to @project.title, project_path(@project), class: "page-title-link" %></h1>
+  <h2 class="page-subheading">Feedback</h2>
 </div>
 
-<div class="flex gap-2 mt-2" style="flex-wrap: wrap;">
-  <%= link_to "Add feedback", new_project_feedback_path(@project), class: "btn btn-primary" %>
-  <%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %>
-</div>
+<%= render "shared/project_tabs", project: @project %>
 
-<div class="flex gap-1 mt-1" style="flex-wrap: wrap;">
-  <% if params[:status] == "pending" %>
-    <%= link_to "Show all", project_feedbacks_path(@project), class: "btn btn-secondary btn-sm" %>
-  <% else %>
-    <%= link_to "Pending only", project_feedbacks_path(@project, status: "pending"), class: "btn btn-secondary btn-sm" %>
-  <% end %>
-</div>
-
-<ul class="list-unstyled mt-2">
-  <% @feedbacks.each do |f| %>
-    <li class="card" style="margin-bottom: 0.75rem;">
-      <strong><%= link_to f.section_name, project_feedback_path(@project, f) %></strong>
-      <span class="text-muted"> · <%= f.implementation_status %></span>
-      <% if f.document_version %>
-        <span class="text-muted"> · Document <%= f.document_version.version_label %></span>
+<% if current_user.supervisor? %>
+  <div class="feedback-toolbar">
+    <%= link_to "Add feedback", new_project_feedback_path(@project), class: "btn btn-primary" %>
+    <div class="feedback-filter">
+      <% if params[:status] == "pending" %>
+        <%= link_to project_feedbacks_path(@project), class: "toggle-switch toggle-switch--on", title: "Showing pending only. Click to show all." do %>
+          <span class="toggle-switch-label">Pending only</span>
+          <span class="toggle-switch-pill"></span>
+        <% end %>
+      <% else %>
+        <%= link_to project_feedbacks_path(@project, status: "pending"), class: "toggle-switch", title: "Click to show pending only." do %>
+          <span class="toggle-switch-label">Pending only</span>
+          <span class="toggle-switch-pill"></span>
+        <% end %>
       <% end %>
-      <p class="text-muted mb-0 mt-1" style="font-size: 0.875rem;"><%= truncate(f.comments, length: 120) %></p>
-      <span class="text-muted" style="font-size: 0.8125rem;"><%= l(f.created_at, format: :short) %></span>
-    </li>
-  <% end %>
-</ul>
+    </div>
+  </div>
+<% end %>
 
-<% if @feedbacks.empty? %>
-  <div class="empty-state mt-2">
-    <p class="mb-0">No feedback yet.</p>
+<%# Feedback on task submissions (for students: supervisor feedback on their submitted tasks) %>
+<% if current_user.student? && @submission_feedbacks.any? %>
+  <section class="card mb-4" aria-labelledby="submission-feedback-heading">
+    <h2 id="submission-feedback-heading" class="card-title">Feedback on your task submissions</h2>
+    <p class="text-muted mb-3" style="font-size: 0.9375rem;">Your supervisor’s feedback on the tasks you’ve submitted.</p>
+    <ul class="list-unstyled mb-0">
+      <% @submission_feedbacks.each do |submission| %>
+        <li class="feedback-list-item" style="margin-bottom: 1rem;">
+          <div class="feedback-list-item-main">
+            <%= link_to submission.task.title, project_task_path(@project, submission.task), class: "feedback-list-item-title" %>
+            <span class="feedback-list-item-meta text-muted" style="font-size: 0.8125rem;">
+              Updated <%= l(submission.updated_at, format: :short) %>
+            </span>
+          </div>
+          <div class="feedback-list-item-preview mt-1" style="white-space: pre-wrap;"><%= submission.supervisor_feedback %></div>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<% if @feedbacks.any? %>
+  <ul class="feedback-list">
+    <% @feedbacks.each do |f| %>
+      <li class="feedback-list-item">
+        <div class="feedback-list-item-main">
+          <%= link_to f.section_name, project_feedback_path(@project, f), class: "feedback-list-item-title" %>
+          <span class="feedback-list-item-meta">
+            <%= f.implementation_status %>
+            <% if f.document_version %>
+              · Document <%= f.document_version.version_label %>
+            <% end %>
+          </span>
+        </div>
+        <p class="feedback-list-item-preview"><%= truncate(f.comments, length: 120) %></p>
+        <span class="feedback-list-item-date"><%= l(f.created_at, format: :short) %></span>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty-state-minimal">
+    <span class="empty-state-minimal-icon" aria-hidden="true">💬</span>
+    <p class="empty-state-minimal-title">No feedback yet</p>
+    <p class="empty-state-minimal-text">Add feedback to guide the student on specific sections or document versions.</p>
   </div>
 <% end %>

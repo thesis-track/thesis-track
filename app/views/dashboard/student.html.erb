@@ -14,84 +14,166 @@
   <p class="page-subtitle">Project: <%= link_to project.title, project_path(project) %></p>
 </div>
 
+<% if current_user.supervisor&.group_meeting_url.present? %>
+  <div class="card card--soft mb-4">
+    <h2 class="card-title">Group meeting</h2>
+    <p class="text-muted mb-1" style="font-size: 0.9375rem;">Your supervisor’s meeting link for all supervisees.</p>
+    <%= link_to current_user.supervisor.group_meeting_url, current_user.supervisor.group_meeting_url, target: "_blank", rel: "noopener", class: "btn btn-secondary btn-sm" %>
+  </div>
+<% end %>
+
 <div class="dashboard-grid">
-  <div class="card card-stat">
-    <h2 class="card-title">Project progress</h2>
-    <p class="card-stat-value"><%= project.progress_percentage %>%</p>
-    <%= render "shared/progress_bar", project: project, label: false %>
-    <p class="card-stat-meta mt-1"><%= project.tasks.completed.count %> of <%= project.tasks.count %> tasks completed</p>
-  </div>
+  <%= link_to project_path(project), class: "dashboard-card-link" do %>
+    <div class="card card-stat dashboard-card dashboard-card--equal">
+      <h2 class="dashboard-card-title">
+        <span class="dashboard-card-icon dashboard-card-icon--progress" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        </span>
+        Project progress
+      </h2>
+      <p class="card-stat-value"><%= project.progress_percentage %>%</p>
+      <%= render "shared/progress_bar", project: project, label: false %>
+      <p class="card-stat-meta mt-1"><%= project.tasks.completed.count %> of <%= project.tasks.count %> tasks completed</p>
+    </div>
+  <% end %>
 
-  <div class="card">
-    <h2 class="card-title">Upcoming meetings</h2>
-    <% upcoming = project.meetings.upcoming.limit(5) %>
-    <% if upcoming.any? %>
-      <ul class="list-unstyled">
-        <% upcoming.each do |m| %>
-          <li class="list-item">
-            <%= link_to m.title, project_meeting_path(project, m) %><br>
-            <span class="text-muted"><%= l(m.scheduled_at, format: :short) %> <%= m.location.presence && " · #{m.location}" %></span>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="text-muted mb-0">No upcoming meetings.</p>
-    <% end %>
-    <%= link_to "All meetings", project_meetings_path(project), class: "btn btn-secondary btn-sm mt-1" %>
-  </div>
+  <%= link_to project_meetings_path(project), class: "dashboard-card-link" do %>
+    <div class="card dashboard-card dashboard-card--equal">
+      <h2 class="dashboard-card-title">
+        <span class="dashboard-card-icon dashboard-card-icon--meetings" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        </span>
+        Upcoming meetings
+      </h2>
+      <% upcoming = project.meetings.upcoming.limit(5) %>
+      <% if upcoming.any? %>
+        <ul class="dashboard-card-list">
+          <% upcoming.each do |m| %>
+            <li class="dashboard-card-item">
+              <span class="dashboard-card-item-link">
+                <span class="dashboard-card-item-icon dashboard-card-item-icon--meeting">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </span>
+                <span class="dashboard-card-item-content">
+                  <span class="dashboard-card-item-title"><%= m.title %></span>
+                  <span class="dashboard-card-item-meta"><%= l(m.scheduled_at, format: :short) %><%= m.location.presence && " · #{m.location}" %></span>
+                </span>
+                <span class="dashboard-card-item-arrow" aria-hidden="true">→</span>
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-muted mb-0">No upcoming meetings.</p>
+      <% end %>
+      <span class="dashboard-card-action">All meetings<span class="dashboard-card-action-arrow" aria-hidden="true">→</span></span>
+    </div>
+  <% end %>
 
-  <div class="card">
-    <h2 class="card-title">Tasks</h2>
-    <% tasks = project.tasks.by_deadline.limit(5) %>
-    <% if tasks.any? %>
-      <ul class="list-unstyled">
-        <% tasks.each do |t| %>
-          <li class="list-item <%= 'overdue' if t.overdue? %>">
-            <%= link_to t.title, project_task_path(project, t) %>
-            <% if t.overdue? %> <span class="text-muted">(overdue)</span><% end %>
-            <span class="text-muted"> · <%= t.status %></span>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="text-muted mb-0">No tasks yet.</p>
-    <% end %>
-    <%= link_to "All tasks", project_tasks_path(project), class: "btn btn-secondary btn-sm mt-1" %>
-  </div>
+  <%= link_to project_tasks_path(project), class: "dashboard-card-link" do %>
+    <div class="card dashboard-card dashboard-card--equal">
+      <h2 class="dashboard-card-title">
+        <span class="dashboard-card-icon dashboard-card-icon--tasks" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </span>
+        Tasks
+      </h2>
+      <% tasks = project.tasks.recent_first.limit(5) %>
+      <% if tasks.any? %>
+        <ul class="dashboard-card-list">
+          <% tasks.each_with_index do |t, idx| %>
+            <li class="dashboard-card-item dashboard-card-item--<%= t.status %> <%= 'dashboard-card-item--overdue' if t.overdue? %>">
+              <span class="dashboard-card-item-link">
+                <span class="dashboard-card-item-icon dashboard-card-item-icon--task">
+                  <% if t.completed? %>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                  <% else %>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                  <% end %>
+                </span>
+                <span class="dashboard-card-item-content">
+                  <span class="dashboard-card-item-title"><%= t.title %><% if t.overdue? %> <span class="dashboard-card-item-badge">overdue</span><% end %></span>
+                  <span class="dashboard-card-item-meta"><%= t.status %></span>
+                </span>
+                <span class="dashboard-card-item-arrow" aria-hidden="true">→</span>
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-muted mb-0">No tasks yet.</p>
+      <% end %>
+      <span class="dashboard-card-action">All tasks<span class="dashboard-card-action-arrow" aria-hidden="true">→</span></span>
+    </div>
+  <% end %>
 
-  <div class="card">
-    <h2 class="card-title">Recent messages</h2>
-    <% recent = project.messages.order(created_at: :desc).limit(5) %>
-    <% if recent.any? %>
-      <ul class="list-unstyled">
-        <% recent.each do |msg| %>
-          <li class="list-item">
-            <strong><%= msg.sender.name %>:</strong> <%= truncate(msg.body, length: 50) %><br>
-            <span class="text-muted"><%= time_ago_in_words(msg.created_at) %> ago</span>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="text-muted mb-0">No messages yet.</p>
-    <% end %>
-    <%= link_to "Messages", project_messages_path(project), class: "btn btn-secondary btn-sm mt-1" %>
-  </div>
+  <%= link_to project_messages_path(project), class: "dashboard-card-link" do %>
+    <div class="card dashboard-card dashboard-card--equal">
+      <h2 class="dashboard-card-title">
+        <span class="dashboard-card-icon dashboard-card-icon--messages" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </span>
+        Recent messages
+      </h2>
+      <% unread = project.unread_count_for(current_user) %>
+      <% if unread.positive? %>
+        <p class="mb-1"><span class="badge badge-warning"><%= unread %> unread</span></p>
+      <% end %>
+      <% recent = project.messages.order(created_at: :desc).limit(5) %>
+      <% if recent.any? %>
+        <ul class="dashboard-card-list">
+          <% recent.each do |msg| %>
+            <li class="dashboard-card-item">
+              <span class="dashboard-card-item-link dashboard-card-item-link--message">
+                <span class="dashboard-card-item-icon dashboard-card-item-icon--message">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </span>
+                <span class="dashboard-card-item-content">
+                  <span class="dashboard-card-item-title"><strong><%= msg.sender.name %>:</strong> <%= truncate(msg.body, length: 50) %></span>
+                  <span class="dashboard-card-item-meta"><%= time_ago_in_words(msg.created_at) %> ago</span>
+                </span>
+                <span class="dashboard-card-item-arrow" aria-hidden="true">→</span>
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-muted mb-0">No messages yet.</p>
+      <% end %>
+      <span class="dashboard-card-action">Messages<span class="dashboard-card-action-arrow" aria-hidden="true">→</span></span>
+    </div>
+  <% end %>
 
-  <div class="card">
-    <h2 class="card-title">Recent feedback</h2>
-    <% feedbacks = project.feedbacks.recent.limit(5) %>
-    <% if feedbacks.any? %>
-      <ul class="list-unstyled">
-        <% feedbacks.each do |f| %>
-          <li class="list-item">
-            <strong><%= f.section_name %></strong> · <%= f.implementation_status %><br>
-            <span class="text-muted"><%= truncate(f.comments, length: 60) %></span>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="text-muted mb-0">No feedback yet.</p>
-    <% end %>
-    <%= link_to "All feedback", project_feedbacks_path(project), class: "btn btn-secondary btn-sm mt-1" %>
-  </div>
+  <%= link_to project_feedbacks_path(project), class: "dashboard-card-link" do %>
+    <div class="card dashboard-card dashboard-card--equal">
+      <h2 class="dashboard-card-title">
+        <span class="dashboard-card-icon dashboard-card-icon--feedback" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+        </span>
+        Recent feedback
+      </h2>
+      <% feedbacks = project.feedbacks.recent.limit(5) %>
+      <% if feedbacks.any? %>
+        <ul class="dashboard-card-list">
+          <% feedbacks.each do |f| %>
+            <li class="dashboard-card-item">
+              <span class="dashboard-card-item-link">
+                <span class="dashboard-card-item-icon dashboard-card-item-icon--feedback">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></svg>
+                </span>
+                <span class="dashboard-card-item-content">
+                  <span class="dashboard-card-item-title"><strong><%= f.section_name %></strong> · <%= f.implementation_status %></span>
+                  <span class="dashboard-card-item-meta"><%= truncate(f.comments, length: 60) %></span>
+                </span>
+                <span class="dashboard-card-item-arrow" aria-hidden="true">→</span>
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-muted mb-0">No feedback yet.</p>
+      <% end %>
+      <span class="dashboard-card-action">All feedback<span class="dashboard-card-action-arrow" aria-hidden="true">→</span></span>
+    </div>
+  <% end %>
 </div>

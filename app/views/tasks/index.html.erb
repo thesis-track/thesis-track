@@ -1,12 +1,20 @@
-<div class="page-header">
-  <h1>Tasks</h1>
-  <p class="page-subtitle"><%= link_to @project.title, project_path(@project) %></p>
+<div class="page-header page-header--section">
+  <p class="page-back-link mb-1">
+    <%= link_to project_path(@project), class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> Back to project
+    <% end %>
+  </p>
+  <h1 class="page-title--project"><%= link_to @project.title, project_path(@project), class: "page-title-link" %></h1>
+  <h2 class="page-subheading">Tasks</h2>
 </div>
 
-<div class="flex gap-2 mt-2" style="align-items: center; flex-wrap: wrap;">
-  <%= link_to "New task", new_project_task_path(@project), class: "btn btn-primary" %>
-  <%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %>
-</div>
+<%= render "shared/project_tabs", project: @project %>
+
+<% if current_user.supervisor? %>
+  <div class="feedback-toolbar" style="margin-bottom: var(--space-4);">
+    <%= link_to "New task", new_project_task_path(@project), class: "btn btn-primary" %>
+  </div>
+<% end %>
 
 <% overdue = @project.tasks.overdue %>
 <% if overdue.any? %>
@@ -26,21 +34,29 @@
 
 <ul class="list-unstyled mt-2">
   <% @tasks.each do |task| %>
-    <li class="card" style="margin-bottom: 1rem;">
+    <% approved = task.completed? && task.supervisor_approved? %>
+    <li class="card task-list-item <%= 'task-list-item--approved' if approved %>" style="margin-bottom: 1rem;">
       <div class="task-row">
         <div class="task-info">
-          <%= link_to task.title, project_task_path(@project, task), class: (task.overdue? ? "overdue" : nil) %>
+          <%= link_to task.title, project_task_path(@project, task), class: "task-title-link #{'task-title-link--approved' if approved} #{'overdue' if task.overdue?}" %>
           <% if task.overdue? %><span class="text-muted">(overdue)</span><% end %>
-          <span class="text-muted"> · <%= task.status %></span>
+          <span class="text-muted"> · <%= task.status %><%= " · Approved" if task.completed? && task.supervisor_approved? %><%= " · Pending approval" if task.completed? && !task.supervisor_approved? %></span>
           <% if task.deadline %><span class="text-muted"> · Due <%= l(task.deadline, format: :date) %></span><% end %>
           <% if task.description.present? %>
             <p class="text-muted mb-0 mt-1" style="font-size: 0.875rem;"><%= truncate(task.description, length: 120) %></p>
           <% end %>
+          <% if current_user.student? && task.pending? && task.task_submission.blank? %>
+            <p class="mb-0 mt-1">
+              <%= link_to "Submit", project_task_path(@project, task), class: "btn btn-primary btn-sm" %>
+            </p>
+          <% end %>
         </div>
-        <div class="task-actions">
-          <%= link_to "Edit", edit_project_task_path(@project, task), class: "btn btn-secondary btn-sm" %>
-          <%= button_to "Delete", project_task_path(@project, task), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove this task?" } %>
-        </div>
+        <% if current_user.supervisor? %>
+          <div class="task-actions">
+            <%= link_to "Edit", edit_project_task_path(@project, task), class: "btn btn-secondary btn-sm" %>
+            <%= button_to "Delete", project_task_path(@project, task), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove this task?" } %>
+          </div>
+        <% end %>
       </div>
     </li>
   <% end %>
@@ -49,6 +65,8 @@
 <% if @tasks.empty? %>
   <div class="empty-state mt-2">
     <p>No tasks yet.</p>
-    <%= link_to "Add your first task", new_project_task_path(@project), class: "btn btn-primary btn-sm" %>
+    <% if current_user.supervisor? %>
+      <%= link_to "Add your first task", new_project_task_path(@project), class: "btn btn-primary btn-sm" %>
+    <% end %>
   </div>
 <% end %>

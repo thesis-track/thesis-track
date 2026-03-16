@@ -4,6 +4,14 @@ class RegistrationsController < Devise::RegistrationsController
   before_action :configure_sign_up_params, only: [:create]
   before_action :configure_account_update_params, only: [:update]
 
+  def update
+    if params.dig(:user, :remove_avatar) == "1"
+      resource.avatar.purge if resource.avatar.attached?
+      params[:user].delete(:remove_avatar)
+    end
+    super
+  end
+
   protected
 
   def configure_sign_up_params
@@ -19,6 +27,6 @@ class RegistrationsController < Devise::RegistrationsController
   end
 
   def account_update_keys
-    %i[first_name last_name student_id degree_programme department staff_id]
+    %i[first_name last_name student_id degree_programme department staff_id avatar remove_avatar]
   end
 end

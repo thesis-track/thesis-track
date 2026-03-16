@@ -1,10 +1,77 @@
 <div class="card">
   <h1><%= @task.title %></h1>
-  <p class="text-muted">Status: <%= @task.status %> <% if @task.deadline %> · Due <%= l(@task.deadline, format: :date) %><% end %></p>
-  <% if @task.overdue? %><p class="overdue">This task is overdue.</p><% end %>
+  <p class="text-muted">Status: <strong><%= @task.status %></strong><% if @task.completed? && @task.task_submission&.approved? %> · <span class="badge badge-success">Approved</span><% elsif @task.completed? %> · Pending approval<% end %><% if @task.deadline %> · Due <%= l(@task.deadline, format: :date) %><% end %></p>
+  <% if @task.overdue? && @task.pending? %><p class="overdue">This task is overdue.</p><% end %>
   <% if @task.description.present? %>
     <p><%= simple_format(@task.description) %></p>
   <% end %>
-  <%= link_to "Edit", edit_project_task_path(@project, @task), class: "btn btn-primary" %>
-  <%= link_to "Back to tasks", project_tasks_path(@project), class: "btn btn-secondary" %>
+
+  <% submission = @task.task_submission %>
+
+  <%# Student: submit form when task is still pending and no submission yet %>
+  <% if current_user.student? && @task.pending? && submission.nil? %>
+    <div class="card mt-3" style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-light);">
+      <h2 class="card-title" style="font-size: 1.125rem;">Submit this task</h2>
+      <p class="text-muted mb-2" style="font-size: 0.875rem;">Your submission will mark the task as completed and notify your supervisor.</p>
+      <%= form_with model: [@project, @task, @task.build_task_submission], url: project_task_task_submission_path(@project, @task), method: :post, local: true do |f| %>
+        <div class="form-group">
+          <%= f.label :notes, "Notes or description of what you're submitting (optional)", class: "form-label" %>
+          <%= f.text_area :notes, class: "form-control", rows: 4, placeholder: "Describe what you've done or attach a file below." %>
+        </div>
+        <div class="form-group">
+          <%= f.label :attachment, "Attachment (optional)", class: "form-label" %>
+          <%= f.file_field :attachment, class: "form-control" %>
+        </div>
+        <%= f.submit "Submit task", class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# After submission: show what was submitted and supervisor feedback %>
+  <% if submission.present? %>
+    <div class="card mt-3" style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-light);">
+      <h2 class="card-title" style="font-size: 1.125rem;">Submission</h2>
+      <p class="text-muted mb-1" style="font-size: 0.875rem;">Submitted <%= l(submission.submitted_at || submission.created_at, format: :short) %><% if submission.approved? %> · <strong class="text-success">Approved</strong> <%= l(submission.approved_at, format: :short) %><% end %></p>
+      <% if submission.notes.present? %>
+        <div class="mb-2">
+          <strong>Notes:</strong>
+          <%= simple_format(submission.notes) %>
+        </div>
+      <% end %>
+      <% if submission.attachment.attached? %>
+        <p class="mb-2">
+          <strong>Attachment:</strong>
+          <%= link_to submission.attachment.filename, rails_blob_path(submission.attachment), target: "_blank", rel: "noopener" %>
+        </p>
+      <% end %>
+
+      <% if submission.supervisor_feedback.present? %>
+        <div class="mt-2 pt-2" style="border-top: 1px solid var(--color-border-light);">
+          <strong>Supervisor feedback:</strong>
+          <%= simple_format(submission.supervisor_feedback) %>
+        </div>
+      <% end %>
+
+      <%# Supervisor: approve + form to add or edit feedback %>
+      <% if current_user.supervisor? %>
+        <% unless submission.approved? %>
+          <p class="mt-2 mb-2">
+            <%= button_to "Approve task", approve_project_task_task_submission_path(@project, @task), method: :post, class: "btn btn-primary btn-sm" %>
+          </p>
+        <% end %>
+        <%= form_with model: [@project, @task, submission], url: project_task_task_submission_path(@project, @task), method: :patch, local: true do |f| %>
+          <div class="form-group mt-2">
+            <%= f.label :supervisor_feedback, "Your feedback to the student", class: "form-label" %>
+            <%= f.text_area :supervisor_feedback, class: "form-control", rows: 4, value: submission.supervisor_feedback, placeholder: "Add or update your feedback..." %>
+          </div>
+          <%= f.submit submission.supervisor_feedback.present? ? "Update feedback" : "Add feedback", class: "btn btn-secondary btn-sm" %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if current_user.supervisor? %>
+    <%= link_to "Edit task", edit_project_task_path(@project, @task), class: "btn btn-primary mt-2" %>
+  <% end %>
+  <%= link_to "Back to tasks", project_tasks_path(@project), class: "btn btn-secondary mt-2" %>
 </div>

@@ -1,40 +1,96 @@
-<div class="page-header">
-  <h1>Messages</h1>
-  <p class="page-subtitle">
-    <%= link_to @project.title, project_path(@project) %> — Conversation with <%= @other_party.name %>
+<div class="page-header page-header--section">
+  <p class="page-back-link mb-1">
+    <% back_path = current_user.supervisor? ? messages_path : project_path(@project) %>
+    <% back_label = current_user.supervisor? ? "Back to messages" : "Back to project" %>
+    <%= link_to back_path, class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> <%= back_label %>
+    <% end %>
+  </p>
+  <h1 class="page-title--project"><%= link_to @project.title, project_path(@project), class: "page-title-link" %></h1>
+  <h2 class="page-subheading">Messages</h2>
+  <p class="page-subtitle text-muted messages-with">
+    Conversation with <%= @other_party.name %>
   </p>
 </div>
 
-<%= form_with url: project_messages_path(@project), method: :get, local: true, class: "flex gap-1", style: "margin-bottom: 1rem;" do |f| %>
-  <%= f.text_field :q, value: params[:q], class: "form-control", placeholder: "Search messages...", style: "max-width: 300px;" %>
-  <%= f.submit "Search", class: "btn btn-secondary" %>
-  <%= link_to "Clear", project_messages_path(@project), class: "btn btn-secondary" if params[:q].present? %>
-<% end %>
+<%= render "shared/project_tabs", project: @project %>
 
-<div class="card" style="max-height: 60vh; overflow-y: auto;">
-  <ul class="list-unstyled">
-    <% @messages.each do |msg| %>
-      <li class="list-item">
-        <strong><%= msg.sender.name %></strong>
-        <span class="text-muted"><%= l(msg.created_at, format: :short) %></span>
-        <p class="mb-0 mt-1"><%= simple_format(msg.body) %></p>
-      </li>
+<div class="messages-toolbar">
+  <%= form_with url: project_messages_path(@project), method: :get, local: true, class: "messages-search-form" do |f| %>
+    <%= f.text_field :q, value: params[:q], class: "form-control messages-search-input", placeholder: "Search messages…" %>
+    <%= button_tag type: "submit", class: "btn btn-secondary btn-sm messages-search-btn", title: "Search", "aria-label" => "Search" do %>
+      <svg class="messages-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
     <% end %>
-  </ul>
-  <% if @messages.empty? %>
-    <p class="text-muted mb-0">No messages yet. Send one below.</p>
+    <%= link_to "Clear", project_messages_path(@project), class: "btn btn-secondary btn-sm" if params[:q].present? %>
   <% end %>
 </div>
 
-<div class="card mt-1">
-  <h2 class="card-title">Send message</h2>
-  <%= form_with model: [@project, @message], local: true do |f| %>
-    <div class="form-group">
-      <%= f.label :body, "Message" %>
-      <%= f.text_area :body, class: "form-control", rows: 3, required: true %>
-    </div>
-    <%= f.submit "Send", class: "btn btn-primary" %>
-  <% end %>
+<div class="messages-panel">
+  <div class="messages-thread">
+    <% if @messages.any? %>
+      <ul class="messages-list">
+        <% @messages.each do |msg| %>
+          <li class="message-bubble message-bubble--<%= msg.sender_id == current_user.id ? 'sent' : 'received' %> <%= 'message-bubble--unread' if msg.receiver_id == current_user.id && !msg.read? %>">
+            <div class="message-bubble-avatar">
+              <% if msg.sender.avatar.attached? %>
+                <%= image_tag msg.sender.avatar.variant(resize_to_fill: [40, 40]), class: "message-avatar-img", alt: "" %>
+              <% else %>
+                <span class="message-avatar-initials"><%= msg.sender.initials %></span>
+              <% end %>
+            </div>
+            <div class="message-bubble-content">
+              <div class="message-bubble-header">
+                <span class="message-bubble-sender"><%= msg.sender.name %></span>
+                <span class="message-bubble-time"><%= l(msg.created_at, format: :short) %></span>
+                <% if msg.receiver_id == current_user.id %>
+                  <span class="message-bubble-status message-bubble-status--<%= msg.status %>"><%= msg.status.titleize %></span>
+                  <% if msg.status.in?(%w[sent seen]) && current_user.supervisor? %>
+                    <%= button_to "Acknowledge", acknowledge_project_message_path(@project, msg), method: :patch, class: "btn btn-sm btn-outline-primary ms-1" %>
+                  <% end %>
+                <% end %>
+              </div>
+              <div class="message-bubble-body">
+                <%= simple_format(msg.body) %>
+              </div>
+              <% if msg.attachments.attached? %>
+                <div class="message-bubble-attachments">
+                  <% msg.attachments.each do |att| %>
+                    <%= link_to att.filename, rails_blob_path(att), target: "_blank", rel: "noopener", class: "message-attachment-link" %>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="messages-empty-inline">
+        <p class="messages-empty-inline-text">No messages yet. Send one below.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="messages-compose">
+    <%= form_with model: [@project, @message], local: true, class: "messages-compose-form" do |f| %>
+      <div class="messages-compose-row">
+        <%= f.text_area :body, class: "form-control messages-compose-textarea", rows: 3, placeholder: "Write your message…", required: true %>
+        <%= button_tag type: "submit", class: "messages-compose-send", title: "Send message", "aria-label" => "Send message" do %>
+          <svg class="messages-compose-send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        <% end %>
+      </div>
+      <div class="form-group messages-compose-field messages-compose-attachments">
+        <%= f.label :attachments, "Attachments (optional)", class: "messages-compose-label messages-compose-label--optional" %>
+        <div class="messages-compose-file-wrap">
+          <%= f.file_field :attachments, multiple: true, class: "messages-compose-file", direct_upload: true %>
+        </div>
+      </div>
+    <% end %>
+  </div>
 </div>
 
-<p class="mt-1"><%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %></p>
+<p class="feedback-back-link mt-2"><%= link_to "← Back to project", project_path(@project), class: "link-subtle" %></p>

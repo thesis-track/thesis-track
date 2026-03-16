@@ -1,11 +1,17 @@
-<div class="page-header">
-  <h1>Meetings</h1>
-  <p class="page-subtitle"><%= link_to @project.title, project_path(@project) %></p>
+<div class="page-header page-header--section">
+  <p class="page-back-link mb-1">
+    <%= link_to project_path(@project), class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> Back to project
+    <% end %>
+  </p>
+  <h1 class="page-title--project"><%= link_to @project.title, project_path(@project), class: "page-title-link" %></h1>
+  <h2 class="page-subheading">Meetings</h2>
 </div>
 
-<div class="flex gap-2 mt-2" style="flex-wrap: wrap;">
+<%= render "shared/project_tabs", project: @project %>
+
+<div class="feedback-toolbar" style="margin-bottom: var(--space-4);">
   <%= link_to "Schedule meeting", new_project_meeting_path(@project), class: "btn btn-primary" %>
-  <%= link_to "Back to project", project_path(@project), class: "btn btn-secondary" %>
 </div>
 
 <h2>Upcoming</h2>

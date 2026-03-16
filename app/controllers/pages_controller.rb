@@ -10,4 +10,8 @@ class PagesController < ApplicationController
       render :home
     end
   end
+
+  def how_to_use
+    render :how_to_use
+  end
 end

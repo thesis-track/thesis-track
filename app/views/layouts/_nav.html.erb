@@ -1,26 +1,57 @@
-<nav class="nav">
+<nav class="nav" role="navigation" aria-label="Main">
   <div class="nav-inner">
-    <%= link_to "ThesisTrack", dashboard_path, class: "nav-brand" %>
+    <%= link_to dashboard_path, class: "nav-brand" do %>
+      <span class="nav-brand-text">ThesisTrack</span>
+    <% end %>
     <div class="nav-links">
-      <% if current_user.supervisor? %>
-        <%= link_to "Dashboard", dashboard_path %>
-        <%= link_to "Students & Projects", projects_path %>
-      <% else %>
-        <%= link_to "Dashboard", dashboard_path %>
-        <% if current_user.project.present? && current_user.project.persisted? %>
-          <%= link_to "My Project", project_path(current_user.project) %>
-          <%= link_to "Tasks", project_tasks_path(current_user.project) %>
-          <%= link_to "Meetings", project_meetings_path(current_user.project) %>
-          <%= link_to "Messages", project_messages_path(current_user.project) %>
-          <%= link_to "Documents", project_documents_path(current_user.project) %>
-          <%= link_to "Feedback", project_feedbacks_path(current_user.project) %>
-        <% else %>
-          <%= link_to "Get started", get_started_path %>
+      <div class="nav-links-main">
+        <%= link_to messages_path, class: "nav-icon-link #{'nav-link--active' if current_page?(messages_path)}", title: "Messages", "aria-label" => "Messages" do %>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <% end %>
-      <% end %>
-      <span class="nav-user"><%= current_user.name %> (<%= current_user.role %>)</span>
-      <%= link_to "Edit account", edit_user_registration_path, class: "btn btn-secondary btn-sm" %>
-      <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "btn btn-secondary btn-sm" %>
+        <%= link_to notifications_path, class: "nav-icon-link #{'nav-link--active' if current_page?(notifications_path)}", title: "Notifications", "aria-label" => "Notifications" do %>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13 21a1 1 0 0 1-2 0"/></svg>
+          <% unread_count = current_user.unread_notification_count %>
+          <% if unread_count.positive? %>
+            <span class="nav-notifications-count"><%= unread_count > 99 ? "99+" : unread_count %></span>
+          <% end %>
+        <% end %>
+      </div>
+      <span class="nav-divider" aria-hidden="true"></span>
+      <div class="nav-links-pages">
+        <% if current_user.supervisor? %>
+          <%= link_to "Dashboard", dashboard_path, class: "nav-link #{'nav-link--active' if current_page?(dashboard_path)}" %>
+          <%= link_to "Students & Projects", projects_path, class: "nav-link #{'nav-link--active' if request.path == projects_path}" %>
+        <% else %>
+          <%= link_to "Dashboard", dashboard_path, class: "nav-link #{'nav-link--active' if current_page?(dashboard_path)}" %>
+          <% if current_user.project.present? && current_user.project.persisted? %>
+            <% proj = current_user.project %>
+            <%= link_to "Project", project_path(proj), class: "nav-link #{'nav-link--active' if request.path.start_with?(project_path(proj)) && !request.path.include?('/documents')}" %>
+            <%= link_to "Documents", project_documents_path(proj), class: "nav-link #{'nav-link--active' if request.path.start_with?(project_documents_path(proj))}" %>
+          <% else %>
+            <%= link_to "Get started", get_started_path, class: "nav-link #{'nav-link--active' if current_page?(get_started_path)}" %>
+          <% end %>
+        <% end %>
+        <%= link_to "How to use", how_to_use_path, class: "nav-link #{'nav-link--active' if current_page?(how_to_use_path)}" %>
+      </div>
+      <span class="nav-divider" aria-hidden="true"></span>
+      <div class="nav-profile-dropdown">
+        <details class="profile-dropdown">
+          <summary class="profile-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+            <% if current_user.avatar.attached? %>
+              <%= image_tag current_user.avatar.variant(resize_to_fill: [32, 32]), class: "profile-dropdown-avatar", alt: "" %>
+            <% else %>
+              <span class="profile-dropdown-initials"><%= current_user.initials %></span>
+            <% end %>
+            <span class="profile-dropdown-label"><%= current_user.name %></span>
+            <svg class="profile-dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
+          <div class="profile-dropdown-menu">
+            <span class="profile-dropdown-role"><%= current_user.role.capitalize %></span>
+            <%= link_to "Edit account", edit_user_registration_path, class: "profile-dropdown-item" %>
+            <%= link_to "Sign out", destroy_user_session_path, class: "profile-dropdown-item profile-dropdown-signout-link" %>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
 </nav>

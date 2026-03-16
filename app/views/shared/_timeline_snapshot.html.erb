@@ -1,14 +1,26 @@
-<%# Mini phase timeline. Local: project %>
-<% phases = project.timeline_phases %>
-<div class="timeline-snapshot">
-  <% phases.each_with_index do |phase, i| %>
-    <% current = !phase[:done] && (i.zero? || phases[i - 1][:done]) %>
-    <div class="timeline-phase <%= 'timeline-phase-done' if phase[:done] %> <%= 'timeline-phase-current' if current %>">
-      <span class="timeline-phase-icon"><%= phase[:done] ? "✓" : (current ? "⏳" : "○") %></span>
-      <span class="timeline-phase-name"><%= phase[:name] %></span>
-    </div>
-    <% unless i == phases.size - 1 %>
-      <div class="timeline-connector"></div>
-    <% end %>
+<%# Phase workflow list (task-style). Local: project %>
+<% data = project.phase_progress_data %>
+<ul class="list-unstyled phase-list mb-0">
+  <% data.each do |phase| %>
+    <li class="card phase-list-item <%= 'phase-list-item--done' if phase[:done] %> <%= 'phase-list-item--current' if phase[:current] %>">
+      <div class="task-row">
+        <div class="task-info">
+          <span class="phase-list-icon" aria-hidden="true"><%= phase[:done] ? "✓" : (phase[:current] ? "●" : "○") %></span>
+          <span class="<%= 'phase-list-name--current' if phase[:current] %>"><%= phase[:name] %></span>
+          <span class="text-muted"> · <%= phase[:done] ? "completed" : (phase[:current] ? "in progress" : "pending") %></span>
+          <% if phase[:done] && phase[:completed_at] %>
+            <span class="text-muted" style="font-size: 0.8125rem;"> · <%= l(phase[:completed_at], format: :short) %></span>
+          <% end %>
+        </div>
+        <% if current_user&.supervisor? && phase[:current] && phase[:key] != "submission" %>
+          <div class="task-actions">
+            <%= form_with url: complete_phase_project_path(project), method: :post, local: true do |f| %>
+              <%= f.hidden_field :phase_key, value: phase[:key] %>
+              <%= f.submit "Mark complete", class: "btn btn-primary btn-sm" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </li>
   <% end %>
-</div>
+</ul>
