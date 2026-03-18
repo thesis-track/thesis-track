@@ -9,7 +9,7 @@ gem "sqlite3", ">= 2.1", groups: %i[ development test ]
 # Use PostgreSQL in production
 gem "pg", "~> 1.5", group: :production
 # Authentication with Devise
-gem "devise", "~> 4.9"
+gem "devise", "~> 5.0"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
