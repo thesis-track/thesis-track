@@ -1,0 +1,47 @@
+<div class="page-header page-header--section">
+  <p class="page-back-link mb-1">
+    <%= link_to project_path(@project), class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> Back to project
+    <% end %>
+  </p>
+  <h1 class="page-title--project"><%= link_to @project.title, project_path(@project), class: "page-title-link" %></h1>
+  <h2 class="page-subheading">Communication feed</h2>
+  <p class="page-subtitle text-muted">All messages and feedback in one chronological timeline. No external email tracking.</p>
+</div>
+
+<%= render "shared/project_tabs", project: @project %>
+
+<div class="card card--soft">
+  <p class="text-muted mb-3" style="font-size: 0.9375rem;">
+    <%= link_to "Messages", project_messages_path(@project), class: "link-subtle" %> ·
+    <%= link_to "Feedback", project_feedbacks_path(@project), class: "link-subtle" %>
+  </p>
+  <% if @feed_items.any? %>
+    <ul class="communication-feed list-unstyled mb-0">
+      <% @feed_items.each do |item| %>
+        <li class="communication-feed-item communication-feed-item--<%= item[:type] %> py-2 border-bottom border-light">
+          <span class="communication-feed-date text-muted" style="font-size: 0.8125rem;"><%= l(item[:at].to_time, format: :short) %></span>
+          <% case item[:type] %>
+          <% when :message %>
+            <% msg = item[:record] %>
+            <span class="badge bg-info text-dark me-1">Message</span>
+            <%= msg.sender.name %> → <%= msg.receiver.name %>
+            <span class="badge bg-secondary ms-1"><%= msg.status.titleize %></span>
+            <div class="mt-1" style="font-size: 0.9375rem;"><%= simple_format(msg.body.truncate(300)) %></div>
+            <%= link_to "Open thread", project_messages_path(@project), class: "link-subtle", style: "font-size: 0.875rem;" %>
+          <% when :feedback %>
+            <% fb = item[:record] %>
+            <span class="badge bg-primary me-1">Feedback</span>
+            <%= link_to fb.section_name, project_feedback_path(@project, fb), class: "fw-medium" %>
+            <% if fb.needs_clarification? %><span class="badge bg-warning text-dark ms-1">Needs clarification</span><% end %>
+            <span class="badge bg-secondary ms-1"><%= fb.status.titleize %></span>
+            <div class="mt-1 text-muted" style="font-size: 0.875rem;"><%= fb.comments.to_s.truncate(200) %></div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted mb-0">No messages or feedback yet. All communication stays inside the platform.</p>
+  <% end %>
+</div>
+

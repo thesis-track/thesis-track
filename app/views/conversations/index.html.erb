@@ -1,0 +1,40 @@
+<div class="page-header">
+  <p class="page-back-link mb-1">
+    <%= link_to dashboard_path, class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> Back to dashboard
+    <% end %>
+  </p>
+  <h1>Messages</h1>
+  <p class="page-subtitle">Your conversations. Click one to open the chat.</p>
+</div>
+
+<div class="card card--soft">
+  <% if @projects.any? %>
+    <ul class="list-unstyled mb-0 conversations-list">
+      <% @projects.each do |project| %>
+        <% unread = project.unread_count_for(current_user) %>
+        <li class="conversations-list-item">
+          <%= link_to project_messages_path(project), class: "conversations-list-link #{'conversations-list-link--unread' if unread.positive?}" do %>
+            <span class="conversations-list-icon" aria-hidden="true">💬</span>
+            <div class="conversations-list-body">
+              <span class="conversations-list-name"><%= project.student.name %></span>
+              <span class="conversations-list-meta text-muted">
+                <%= project.title %>
+                <% if project.last_message_at %>
+                  · Last message <%= time_ago_in_words(project.last_message_at) %> ago
+                <% else %>
+                  · No messages yet
+                <% end %>
+              </span>
+            </div>
+            <% if unread.positive? %>
+              <span class="conversations-list-badge"><%= unread > 99 ? "99+" : unread %></span>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted mb-0">No conversations yet. Students you supervise will appear here once they create a project.</p>
+  <% end %>
+</div>

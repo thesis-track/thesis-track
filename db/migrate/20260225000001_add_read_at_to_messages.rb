@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+class AddReadAtToMessages < ActiveRecord::Migration[8.1]
+  def change
+    add_column :messages, :read_at, :datetime
+    add_index :messages, :read_at
+  end
+end

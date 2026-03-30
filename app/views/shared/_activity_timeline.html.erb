@@ -1,0 +1,32 @@
+<%# Renders chronological activity timeline. Local: project %>
+<% events = project.activity_timeline %>
+<% if events.any? %>
+  <ul class="activity-timeline">
+    <% events.each do |event| %>
+      <li class="activity-timeline-item activity-timeline-item--<%= event[:type] %>">
+        <span class="activity-timeline-dot"></span>
+        <div class="activity-timeline-content">
+          <span class="activity-timeline-date"><%= l(event[:at].to_time, format: :short) %></span>
+          <% proj = project %>
+          <% opts = event[:link_options] %>
+          <% case event[:type] %>
+          <% when :feedback %>
+            <%= opts.size >= 2 ? link_to(event[:label], project_feedback_path(proj, opts[1]), class: "activity-timeline-label") : content_tag(:span, event[:label], class: "activity-timeline-label") %>
+          <% when :document %>
+            <%= opts.size >= 2 ? link_to(event[:label], project_document_path(proj, opts[1]), class: "activity-timeline-label") : content_tag(:span, event[:label], class: "activity-timeline-label") %>
+          <% when :deadline, :deadline_missed, :task %>
+            <%= opts.size >= 2 ? link_to(event[:label], project_task_path(proj, opts[1]), class: "activity-timeline-label") : content_tag(:span, event[:label], class: "activity-timeline-label") %>
+          <% when :meeting %>
+            <%= opts.size >= 2 ? link_to(event[:label], project_meeting_path(proj, opts[1]), class: "activity-timeline-label") : content_tag(:span, event[:label], class: "activity-timeline-label") %>
+          <% when :phase_completed %>
+            <%= link_to event[:label], project_path(proj), class: "activity-timeline-label" %>
+          <% else %>
+            <span class="activity-timeline-label"><%= event[:label] %></span>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="text-muted" style="font-size: 0.9375rem;">No activity yet.</p>
+<% end %>

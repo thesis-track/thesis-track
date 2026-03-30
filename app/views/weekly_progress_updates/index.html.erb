@@ -1,0 +1,49 @@
+<div class="page-header page-header--section">
+  <p class="page-back-link mb-1">
+    <%= link_to project_path(@project), class: "link-back" do %>
+      <span class="link-back-arrow" aria-hidden="true">←</span> Back to project
+    <% end %>
+  </p>
+  <h1 class="page-title--project"><%= link_to @project.title, project_path(@project), class: "page-title-link" %></h1>
+  <h2 class="page-subheading">Weekly progress</h2>
+</div>
+
+<%= render "shared/project_tabs", project: @project %>
+
+<% if current_user.student? && @project.student_id == current_user.id %>
+  <p class="mb-2">
+    <%= link_to "Submit progress", new_project_weekly_progress_update_path(@project), class: "btn btn-primary" %>
+  </p>
+<% end %>
+
+<% if @updates.any? %>
+  <ul class="list-unstyled">
+    <% @updates.each do |update| %>
+      <li class="card card--soft mb-2">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <strong>Week of <%= l(update.week_start, format: :date) %></strong>
+          <% if update.status.present? %>
+            <span class="badge <%= 'badge-success' if update.status == 'reviewed' %><%= 'badge-warning' if update.status == 'needs_follow_up' %>"><%= update.status.humanize %></span>
+          <% end %>
+        </div>
+        <% if update.completed.present? %>
+          <p class="mb-1 mt-1"><strong>Completed:</strong> <%= simple_format(update.completed) %></p>
+        <% end %>
+        <% if update.next_plan.present? %>
+          <p class="mb-1"><strong>Next:</strong> <%= simple_format(update.next_plan) %></p>
+        <% end %>
+        <% if update.blockers.present? %>
+          <p class="mb-1"><strong>Blockers:</strong> <%= simple_format(update.blockers) %></p>
+        <% end %>
+        <% if current_user.supervisor? %>
+          <%= form_with model: [@project, update], url: project_weekly_progress_update_path(@project, update), method: :patch, local: true do |f| %>
+            <%= f.select :status, WeeklyProgressUpdate::STATUSES.map { |s| [s.humanize, s] }, { include_blank: "—" }, class: "form-control form-control-sm", style: "max-width: 12rem; display: inline-block;" %>
+            <%= f.submit "Update", class: "btn btn-secondary btn-sm" %>
+          <% end %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="text-muted">No progress updates yet.<% if current_user.student? %> <%= link_to "Submit your first update", new_project_weekly_progress_update_path(@project) %>.<% end %></p>
+<% end %>

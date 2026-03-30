@@ -1,0 +1,12 @@
+<%# Renders tab nav for project section. Local: project %>
+<% tasks_path = project_tasks_path(project) %>
+<% meetings_path = project_meetings_path(project) %>
+<% messages_path = project_messages_path(project) %>
+<% feedbacks_path = project_feedbacks_path(project) %>
+<nav class="project-tabs" aria-label="Project sections">
+  <%= link_to "Overview", project_path(project), class: "project-tab #{'project-tab--active' if current_page?(project_path(project))}" %>
+  <%= link_to "Tasks", tasks_path, class: "project-tab #{'project-tab--active' if request.path.start_with?(tasks_path)}" %>
+  <%= link_to "Meetings", meetings_path, class: "project-tab #{'project-tab--active' if request.path.start_with?(meetings_path)}" %>
+  <%= link_to "Messages", messages_path, class: "project-tab #{'project-tab--active' if request.path.start_with?(messages_path)}" %>
+  <%= link_to "Feedback", feedbacks_path, class: "project-tab #{'project-tab--active' if request.path.start_with?(feedbacks_path)}" %>
+</nav>

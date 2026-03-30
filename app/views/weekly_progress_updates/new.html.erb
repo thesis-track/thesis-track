@@ -1,0 +1,29 @@
+<div class="page-header page-header--section">
+  <h1 class="page-title--project"><%= link_to @project.title, project_path(@project), class: "page-title-link" %></h1>
+  <h2 class="page-subheading">Submit weekly progress</h2>
+</div>
+
+<%= render "shared/project_tabs", project: @project %>
+
+<%= form_with model: [@project, @update], local: true do |f| %>
+  <div class="form-group">
+    <%= f.label :week_start, "Week of" %>
+    <%= f.date_field :week_start, class: "form-control", value: @update.week_start %>
+  </div>
+  <div class="form-group">
+    <%= f.label :completed, "What was completed" %>
+    <%= f.text_area :completed, class: "form-control", rows: 3, placeholder: "Summarise what you did this week." %>
+  </div>
+  <div class="form-group">
+    <%= f.label :next_plan, "What is next" %>
+    <%= f.text_area :next_plan, class: "form-control", rows: 3, placeholder: "What you plan to do next." %>
+  </div>
+  <div class="form-group">
+    <%= f.label :blockers, "Any blockers" %>
+    <%= f.text_area :blockers, class: "form-control", rows: 2, placeholder: "Optional." %>
+  </div>
+  <%= f.submit "Submit", class: "btn btn-primary" %>
+  <%= link_to "Cancel", project_weekly_progress_updates_path(@project), class: "btn btn-secondary" %>
+<% end %>
+
+<p class="mt-2"><%= link_to "← Back to progress", project_weekly_progress_updates_path(@project), class: "link-subtle" %></p>

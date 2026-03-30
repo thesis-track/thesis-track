@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  project: one
+  week_start: 2026-02-25
+  completed: MyText
+  next_plan: MyText
+  blockers: MyText
+  status: MyString
+  reviewed_at: 2026-02-25 16:02:25
+
+two:
+  project: two
+  week_start: 2026-02-25
+  completed: MyText
+  next_plan: MyText
+  blockers: MyText
+  status: MyString
+  reviewed_at: 2026-02-25 16:02:25

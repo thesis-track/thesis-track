@@ -1,0 +1,12 @@
+ThesisTrack – Notification summary
+
+Hello <%= @user.name %>,
+
+You have <%= @notifications.size %> unread notification(s).
+
+<% @notifications.each do |n| %>
+• <%= n.title %>
+  <%= n.body.to_s.truncate(80) %>
+<% end %>
+
+View all in the app.
