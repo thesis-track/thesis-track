@@ -1,0 +1,50 @@
+<div class="page-header page-header--row">
+  <div>
+    <p class="page-back-link mb-1">
+      <%= link_to dashboard_path, class: "link-back" do %>
+        <span class="link-back-arrow" aria-hidden="true">←</span> Back to dashboard
+      <% end %>
+    </p>
+    <h1>Notifications</h1>
+    <p class="page-subtitle">Alerts and reminders for your supervision.</p>
+  </div>
+  <% if @notifications.any? && current_user.notifications.unread.any? %>
+    <%= button_to "Mark all as read", mark_all_read_notifications_path, method: :post, class: "btn btn-secondary btn-sm" %>
+  <% end %>
+</div>
+
+<div class="card">
+  <% if @notifications.any? %>
+    <ul class="list-unstyled mb-0 notifications-list">
+      <% @notifications.each do |n| %>
+        <li class="notification-item <%= 'notification-item--unread' unless n.read? %>">
+          <div class="notification-item-inner">
+            <div class="notification-item-content">
+              <strong><%= n.title %></strong>
+              <% if n.body.present? %>
+                <p class="notification-item-body"><%= n.body %></p>
+              <% end %>
+              <span class="text-muted notification-item-time"><%= time_ago_in_words(n.created_at) %> ago</span>
+            </div>
+            <div class="notification-item-actions">
+              <% if n.subject.is_a?(Project) %>
+                <%= link_to "View thread", project_messages_path(n.subject), class: "btn btn-secondary btn-sm" %>
+              <% elsif n.subject.is_a?(Message) %>
+                <%= link_to "View message", project_messages_path(n.subject.project), class: "btn btn-secondary btn-sm" %>
+              <% elsif n.subject.is_a?(Task) %>
+                <%= link_to "View task", project_task_path(n.subject.project, n.subject), class: "btn btn-secondary btn-sm" %>
+              <% end %>
+              <% unless n.read? %>
+                <%= button_to "Mark read", mark_read_notification_path(n), method: :patch, class: "btn btn-secondary btn-sm" %>
+              <% end %>
+            </div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted mb-0">No notifications yet.</p>
+  <% end %>
+</div>
+
+<p class="mt-2"><%= link_to "Back to dashboard", dashboard_path, class: "btn btn-secondary" %></p>

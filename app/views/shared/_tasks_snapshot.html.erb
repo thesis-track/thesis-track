@@ -1,0 +1,28 @@
+<%# Actual project tasks in the same card list style. Local: project %>
+<% tasks = project.tasks.by_deadline.includes(:task_submission) %>
+<% if tasks.any? %>
+<ul class="list-unstyled phase-list mb-0">
+  <% tasks.each do |task| %>
+    <% approved = task.completed? && task.supervisor_approved? %>
+    <% in_progress = task.completed? && !task.supervisor_approved? %>
+    <li class="card phase-list-item <%= 'phase-list-item--done' if approved %> <%= 'phase-list-item--current' if in_progress %>">
+      <div class="task-row">
+        <div class="task-info">
+          <span class="phase-list-icon" aria-hidden="true"><%= approved ? "✓" : (in_progress ? "●" : "○") %></span>
+          <%= link_to task.title, project_task_path(project, task), class: "phase-list-name--link #{'phase-list-name--approved' if approved}" %>
+          <span class="text-muted"> · <%= task.pending? ? "pending" : (approved ? "completed · Approved" : "completed · Pending approval") %></span>
+          <% if task.deadline %>
+            <span class="text-muted" style="font-size: 0.8125rem;"> · Due <%= l(task.deadline, format: :date) %></span>
+          <% end %>
+          <% if task.completed? && task.task_submission %>
+            <% sub_at = task.task_submission.submitted_at || task.task_submission.created_at %>
+            <span class="text-muted" style="font-size: 0.8125rem;"> · Submitted <%= l(sub_at, format: :short) %></span>
+          <% end %>
+        </div>
+      </div>
+    </li>
+  <% end %>
+</ul>
+<% else %>
+  <p class="text-muted mb-0" style="font-size: 0.875rem;">No tasks yet.</p>
+<% end %>
